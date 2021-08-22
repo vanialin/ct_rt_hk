@@ -104,7 +104,7 @@ summary(skew.onset);IQR(skew.onset)
 #
 #---------
 ## start plotting
-pdf("ED_Fig_2.pdf",height = 7,width = 11)
+pdf("Fig_S2.pdf",height = 7,width = 11)
 x.vec <- c(c(0.25,0.5,0.75,1),rep(c(0.25,0.5,0.75),2))
 y.vec <- c(rep(1,4),rep(c(0.67,0.4),each=3))
 col.option <-  c("#eea990","orange")
