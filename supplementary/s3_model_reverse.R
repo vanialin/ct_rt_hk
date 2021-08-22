@@ -16,7 +16,7 @@ require(e1071)
 #######################################################
 #
 # read in "data_daily_all.csv"
-#daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
+daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
 #
 # functions set for plotting 
 predPlot = function(ct, period, panel){
