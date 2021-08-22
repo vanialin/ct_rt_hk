@@ -8,7 +8,7 @@
 ##                 daily Ct mean, median and skewness (imputed)
 ######################################################
 # read in "data_daily_all.csv"
-#daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
+daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
 #
 # set up time period for selection training periods
 startdate <- c("2020-07-01","2020-11-10")
