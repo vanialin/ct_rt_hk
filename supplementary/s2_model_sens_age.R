@@ -9,6 +9,7 @@ require(e1071)
 ## data_ct: all individual Ct values (with test dates)
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
 ##                 daily Ct mean, median and skewness (imputed)
+##                 subset of the "Figure 1" data in source data file
 ######################################################
 # read in "data_ct.csv" and "data_daily_all.csv"
 ct.linelist <- read.csv("data_ct.csv")
