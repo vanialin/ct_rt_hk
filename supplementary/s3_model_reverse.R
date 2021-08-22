@@ -195,7 +195,7 @@ p = grid.arrange(
                               c(3, 3))
 )
 ## export results 
-ggsave('ED_Fig_4.pdf',p,width = 12, height = 8)
+ggsave('Fig_S4.pdf',p,width = 12, height = 8)
 ##
 #####
 
