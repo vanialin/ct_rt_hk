@@ -14,6 +14,7 @@ require(e1071)
 ## daily_ct_rt: daily case counts/sample counts, incidence-based Rt; 
 #               Ct-based Rt estimated from main model (with prediction interval)
 ##              from "4_model_loglinear"
+## corresponded to "Figure 2" data in source data file
 ######################################################
 # read in "daily_ct_rt.csv"
 ct.rt <- read.csv("daily_ct_rt.csv",as.is = T)
