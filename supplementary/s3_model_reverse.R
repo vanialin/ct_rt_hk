@@ -1,6 +1,6 @@
 #------------
 # reverse validation
-# ED.Fig 4 in paper
+# Supplementary Fig. 4 
 #------------
 #
 # load packages
