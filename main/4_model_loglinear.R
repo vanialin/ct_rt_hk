@@ -106,6 +106,7 @@ cor.rt
 ## export estimated daily Ct-based Rt
 # daily.est - daily estimated Ct-based Rt
 #write.csv(daily.est,"daily_ct_rt.csv",row.names = F)
+# correspond to "Figure 2" data in source data file
 ##
 #--------------
 #####
