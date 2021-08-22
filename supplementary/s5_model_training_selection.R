@@ -36,7 +36,7 @@ for (i in 1:2){ # for wave 3 and wave 4
 #
 #----------
 ## plot out
-pdf("ED_Fig_5.pdf",height = 7,width = 11)
+pdf("Fig_S5.pdf",height = 7,width = 11)
 par(mar=c(4,4,2,3)+0.1)
 fig.list <- list(c(0,0.35,0.45,1),
                  c(0,0.35,0,0.55),
