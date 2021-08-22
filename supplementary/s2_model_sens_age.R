@@ -1,7 +1,7 @@
 #------------
 # sensitivity analysis
 # on age of sampled cases
-# Supplementary Figure 3
+# Supplementary Fig. 3
 #------------
 #
 # load packages
@@ -70,7 +70,7 @@ x.month.pos <- c(0,(which(as.character(date.seq)%in%month.end)-1)) # for axis ti
 x.month.lab <- c("Nov","Dec","Jan","Feb","Mar")
 #
 ## start plotting
-pdf("ED_Fig_3.pdf",height=7,width = 12)
+pdf("Fig_S3.pdf",height=7,width = 12)
 fig.list <- list(c(0,0.25,0.6,1),
                  c(0.5,0.75,0.6,1),
                  c(0.25,0.5,0.6,1),
