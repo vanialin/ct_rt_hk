@@ -11,8 +11,8 @@ require(e1071)
 ##                 daily Ct mean, median and skewness (imputed)
 ######################################################
 # read in "data_ct.csv" and "data_daily_all.csv"
-#ct.linelist <- read.csv("data_ct.csv")
-#daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
+ct.linelist <- read.csv("data_ct.csv")
+daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
 #
 data1 <- daily.linelist
 # add mean age (daily) and calculate daily Ct for adult samples only
