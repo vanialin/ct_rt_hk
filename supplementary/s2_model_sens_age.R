@@ -1,6 +1,7 @@
 #------------
 # sensitivity analysis
 # on age of sampled cases
+# Supplementary Figure 3
 #------------
 #
 # load packages
