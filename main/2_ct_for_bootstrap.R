@@ -160,6 +160,7 @@ wave.all$period <- ifelse(as.Date(wave.all$date)>=start.date[1]&
 ## export results
 # wave.all - with CIs calculated for GAM Ct and skewness
 #write.csv(wave.all,"daily_ct_bootstrap.csv",row.names=F)
+# corresponded to "Figure 1" data in source data file
 ##
 #####
 
