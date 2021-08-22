@@ -6,7 +6,7 @@
 ## daily_ct_bootstrap: daily case counts/sample counts, incidence-based Rt; 
 ##                     daily Ct mean, median and skewness (imputed)
 ##                     CIs calculated for GAM Ct and skewness (from "2_ct_for_bootstrap")
-## correspond to "Figure 1" data in Source Date file
+## correspond to "Figure 1" data in source data file
 ######################################################
 # load packages
 require(plotrix)
