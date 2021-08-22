@@ -13,7 +13,7 @@ require(e1071)
 ######################################################
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
 ##                 daily Ct mean, median and skewness (imputed)
-##                 subset of the "Figure 1" data in source data file
+##                 correspond to "Supplementary" data in source data file
 #######################################################
 #
 # read in "data_daily_all.csv"
