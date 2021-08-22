@@ -7,7 +7,7 @@
 ##                 daily Ct mean, median and skewness (imputed)
 ######################################################
 # read in "data_daily_all.csv"
-#daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
+daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
 #
 # data on days for cross-validation
 data1 <- daily.linelist[as.Date(daily.linelist$date)>=
