@@ -6,6 +6,7 @@
 ## data_ct: all individual Ct values (with test dates)
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
 ##                 daily Ct mean, median and skewness (imputed)
+##                 correspond to "Supplementary" data in source data file
 ######################################################
 # load packages
 require(e1071) # to calculate skewness
