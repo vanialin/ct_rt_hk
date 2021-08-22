@@ -1,6 +1,7 @@
 #------------
 # back-projecting Ct
 # on illness onset
+# Supplementary Fig. 2
 #------------
 #
 # load packages
