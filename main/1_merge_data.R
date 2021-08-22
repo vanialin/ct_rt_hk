@@ -53,6 +53,7 @@ daily.out$date.num <- as.numeric(daily.out$date)
 # daily.out - all daily information required for regression 
 # i.e., daily incidence-based Rt, daily Ct measured by mean/median and skewness (imputed)
 #write.csv(daily.out,"DIRECTORY/data_daily_all.csv",row.names = F)
+# correspond to "Supplementary" data in source data file
 ##
 #####
 
