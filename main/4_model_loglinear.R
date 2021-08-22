@@ -6,7 +6,6 @@
 ######################################################
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
 ##                 daily Ct mean, median and skewness (imputed) from "1_merge_data"
-## corresponded to "Figure 2" data in source data file
 ######################################################
 # read in "data_daily_all.csv"
 daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
