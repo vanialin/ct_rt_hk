@@ -6,4 +6,4 @@ Please refer to the data provided in the "source data" file for data used to gen
 
 Other individual patient data are not provided due to data consent with relevant party but variable explanation has been written within each script (if necessary) to facilitate interpretation.
 
-[Operated under R version 3.6.1 (2019-07-05)]
+[Operated under R version 3.6.3 (R Development Core Team, 2020)]
