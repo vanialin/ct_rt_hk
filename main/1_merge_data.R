@@ -1,6 +1,8 @@
 #-----------
 # merge daily data
 # case count and Ct distribution
+# BY Yang B. and Lin Y.
+# August 2021
 #-----------
 ######################################################
 ## data_ct: all individual Ct values (with test dates)
