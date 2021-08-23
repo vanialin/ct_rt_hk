@@ -2,6 +2,8 @@
 # log-linear
 # Rt and Ct
 # also include reverse validation
+# By Lin Y. and Yang B.
+# August 2021
 #------------
 ######################################################
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
