@@ -1,7 +1,7 @@
 #------------
 # plot Ct distributions
 # Fig. 1 in paper
-# Lin Y. and Yang B.
+# By Lin Y. and Yang B.
 # August 2021
 #-------------
 ######################################################
