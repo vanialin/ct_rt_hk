@@ -1,6 +1,6 @@
 #------------
 # plot regression result
-# Fig. 2 in paper
+# Fig. 2 
 # By Yang B. and Lin Y. 
 # updated October 2021
 #------------
