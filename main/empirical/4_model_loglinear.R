@@ -3,6 +3,7 @@
 # Rt and Ct
 # also include reverse validation
 # By Lin Y. and Yang B.
+# updated October 2021
 #------------
 ######################################################
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
@@ -50,7 +51,9 @@ cor.mat
 #####
 train.period <- seq(as.Date("2020-07-06"),as.Date("2020-08-31"),1)
 train.data <- daily.linelist[daily.linelist$date%in%as.character(train.period),]
-# cross-correlation function (7*6)
+#
+### cross-correlation function (for checking lag/lead)
+# 7*6
 par(mfrow=c(3,1),mar=c(5,4,2,2)+0.1)
 ccf.mean <- ccf(train.data$mean,train.data$local.rt.mean,las=1,main=NA)
 mtext("a",side=3,adj=0,font=2,line=.5)
@@ -58,7 +61,10 @@ ccf.median <- ccf(train.data$median,train.data$local.rt.mean,las=1,main=NA)
 mtext("b",side=3,adj=0,font=2,line=.5)
 ccf.skewness <- ccf(train.data$skewness,train.data$local.rt.mean,las=1,main=NA)
 mtext("c",side=3,adj=0,font=2,line=.5)
+
 #
+#
+
 # model select on AIC
 # original form, Rt
 aic.list <- list()
