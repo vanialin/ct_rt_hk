@@ -1,6 +1,6 @@
 #------------
 # reverse validation
-# Supplementary Fig. 4 
+# ED.Fig 4 in paper
 #------------
 #
 # load packages
@@ -13,11 +13,10 @@ require(e1071)
 ######################################################
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
 ##                 daily Ct mean, median and skewness (imputed)
-##                 correspond to "Supplementary" data in source data file
 #######################################################
 #
 # read in "data_daily_all.csv"
-daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
+#daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_daily_all.csv",as.is=T)
 #
 # functions set for plotting 
 predPlot = function(ct, period, panel){
@@ -195,7 +194,7 @@ p = grid.arrange(
                               c(3, 3))
 )
 ## export results 
-ggsave('Fig_S4.pdf',p,width = 12, height = 8)
+ggsave('ED_Fig_4.pdf',p,width = 12, height = 8)
 ##
 #####
 

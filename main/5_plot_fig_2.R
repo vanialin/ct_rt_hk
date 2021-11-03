@@ -1,8 +1,6 @@
 #------------
 # plot regression result
 # Fig. 2 in paper
-# By Yang B. and Lin Y.
-# August 2021
 #------------
 #
 # load packages
@@ -16,10 +14,9 @@ require(e1071)
 ## daily_ct_rt: daily case counts/sample counts, incidence-based Rt; 
 #               Ct-based Rt estimated from main model (with prediction interval)
 ##              from "4_model_loglinear"
-##              corresponded to "Figure 2" data in source data file
 ######################################################
 # read in "daily_ct_rt.csv"
-ct.rt <- read.csv("daily_ct_rt.csv",as.is = T)
+ct.rt <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/result/daily_ct_rt.csv",as.is = T)
 ## variable explanations (for Ct-based Rt in the data)
 # fit - point estimates 
 # upr - upper range for prediction interval 
@@ -42,49 +39,66 @@ predPlot = function(ct, period, panel){
                 dates = range(data_used$date)
         }
         
+        
+        data_rt = data_used %>% # to truncate incidence-based Rt
+                filter(date <= max(dates)-7)
+        
         p = ggplot(data = data_used %>%
                            mutate(upr = ifelse(upr > y.max, y.max, upr))) +
                 
+                #epi curve
+                geom_bar(data=data_used,
+                         aes(x = date,
+                             y = all.cases),
+                         stat = 'identity',
+                         fill = '#dad5d4') +
+                
+                #case rt
                 geom_polygon(data = tibble(
-                        date_new = c(data_used$date, 
-                                     rev(data_used$date)),
-                        y_new = c(data_used$local.rt.lower,
-                                  rev(data_used$local.rt.upper))) %>%
+                        date_new = c(data_rt$date, 
+                                     rev(data_rt$date)),
+                        y_new = c(data_rt$local.rt.lower,
+                                  rev(data_rt$local.rt.upper))) %>%
                                 mutate(y_new = ifelse(y_new > y.max, y.max, y_new)),
                         aes(x = date_new,
-                            y = y_new,
+                            y = y_new*25,
                             fill = 'empirical'),
                         color = NA,
                         alpha = 0.2) +
                 
-                geom_line(aes(x = date,
-                              y = local.rt.mean,
+                geom_line(data = data_rt ,
+                          aes(x = date,
+                              y = local.rt.mean*25,
                               color = 'empirical'),
                           size = 1) +
-                
+                #ct rt
                 geom_point(aes(x = date,
-                               y = fit,
+                               y = fit*25,
                                color = 'predicted'),
                            size = 2) +
                 
                 geom_segment(aes(x = date,
-                                 y = lwr,
+                                 y = lwr*25,
                                  xend = date,
-                                 yend = upr,
+                                 yend = upr*25,
                                  color = 'predicted'),
                              size = 0.8) +
                 
-                scale_y_continuous(name = 'Rt',
-                                   limits = c(0, y.max),
+                scale_y_continuous(name = 'Cases',
+                                   limits = c(0, 150),
                                    expand = c(0, 0),
-                                   breaks = seq(0, y.max, 1)) +
+                                   breaks = seq(0, 150, 30),
+                                   position = 'right',
+                                   sec.axis = sec_axis(~./25, 
+                                                       name = 'Rt')) +
+                
                 scale_x_date(name = 'Date',
                              limits = dates,
                              date_breaks = "1 week", 
                              date_labels = "%d/%m",
                              expand = c(0.01, 0.01))  +
                 
-                geom_hline(yintercept = 1,
+                geom_hline(yintercept = 1*25,
                            linetype = 'dashed',
                            size = 1,
                            color = 'grey') +
@@ -188,10 +202,11 @@ retroExamplePlot = function(df, date, panel){
                                date <= date_max)
         
         
-        p = ggplot(data = df) +
+        p = ggplot() +
                 
                 # epi curve
-                geom_bar(aes(x = date,
+                geom_bar(data=data_case,
+                         aes(x = date,
                              y = all.cases),
                          stat = 'identity',
                          fill = '#dad5d4') +
@@ -312,7 +327,7 @@ p = grid.arrange(
                               c(4,6,6))
 )
 ## export results
-ggsave("Fig_2.pdf",p,width = 22, height = 12)
+#ggsave("Fig_2_update_v2.pdf",p,width = 22, height = 12)
 #
 ######
 

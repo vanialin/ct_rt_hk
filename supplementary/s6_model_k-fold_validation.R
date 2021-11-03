@@ -5,10 +5,9 @@
 ######################################################
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
 ##                 daily Ct mean, median and skewness (imputed)
-##                 correspond to "Supplementary" data in source data file
 ######################################################
 # read in "data_daily_all.csv"
-daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
+#daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_daily_all.csv",as.is=T)
 #
 # data on days for cross-validation
 data1 <- daily.linelist[as.Date(daily.linelist$date)>=

@@ -1,7 +1,6 @@
 #------------
 # back-projecting Ct
 # on illness onset
-# Supplementary Fig. 2
 #------------
 #
 # load packages
@@ -13,8 +12,8 @@ require(lubridate)
 ## data_cases: daily case counts/sample counts and incidence-based Rt
 ######################################################
 # read in "data_ct.csv" and "data_cases.csv"
-ct.linelist <- read.csv("data_ct.csv")
-daily.linelist <- read.csv("data_cases.csv")
+#ct.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/data/data_ct.csv")
+#daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/data/data_cases.csv")
 #
 ct.symp <- ct.linelist[!is.na(ct.linelist$date.onset),]
 # log-linear trend of Ct over time
@@ -104,24 +103,26 @@ summary(skew.onset);IQR(skew.onset)
 #
 #---------
 ## start plotting
-pdf("Fig_S2.pdf",height = 7,width = 11)
-x.vec <- c(c(0.25,0.5,0.75,1),rep(c(0.25,0.5,0.75),2))
-y.vec <- c(rep(1,4),rep(c(0.67,0.4),each=3))
+#pdf("ED_Fig_2.pdf",height = 10,width = 9)
+par(mar=c(4,3,2,2)+0.1)
+#x.vec <- c(c(0.25,0.5,0.75,1),rep(c(0.25,0.5,0.75),2))
+x.vec <- c(rep(0.4,4),rep(0.7,3),rep(1,3))
+#y.vec <- c(rep(1,4),rep(c(0.67,0.4),each=3))
+y.vec <- c(c(1,0.77,0.54,0.31),rep(c(1,0.77,0.54),2))
 col.option <-  c("#eea990","orange")
 col.option2 <- c("#008080","#008744")
 take <- c(1:4,6:8,9:11)
 for (i in 1:10){
         if (i == 1){
-                par(fig=c(x.vec[i]-0.25,x.vec[i],y.vec[i]-0.4,y.vec[i]))
-                
+                par(fig=c(x.vec[i]-0.37,x.vec[i],y.vec[i]-0.28,y.vec[i]))
         } else {
-                par(fig=c(x.vec[i]-0.25,x.vec[i],y.vec[i]-0.4,y.vec[i]),new=T)
+                par(fig=c(x.vec[i]-0.37,x.vec[i],y.vec[i]-0.28,y.vec[i]),new=T)
         }
-        if (i %in% 8:10){
-                par(mar=c(3,3.5,4,0.5)+0.1) 
-        } else {
-                par(mar=c(4,3.5,3,0.5)+0.1)
-        }
+        #if (i %in% 8:10){
+         #       par(mar=c(3,3.5,4,0.5)+0.1) 
+        #} else {
+        #        par(mar=c(4,3.5,3,0.5)+0.1)
+        #}
         take.tmp <- take[i]
         # set threshold for distinguishing color (for actual Ct)
         # choose color
@@ -139,6 +140,9 @@ for (i in 1:10){
         hist(onset.list[[take.tmp]]$ct.onset[onset.list[[take.tmp]]$ct.onset<=40],
              breaks = 4:20*2,col=alpha(col.onset,.55+0.15*(avg.rt[take.tmp]==1)),
              border="white",add=T,main=NA,ylim = c(0,200))
+        abline(v=mean(actual.list[[take.tmp]]$ct.value),col="#d46c26",lwd=2)
+        abline(v=mean(onset.list[[take.tmp]]$ct.onset,na.rm = T),
+               col="#008744",lwd=2,lty=2)
         # legends (for skewness)
         # actual
         mtext(expression(b[s]),side=3,line=-1.2,at=30,col=col.actual,cex=.8)
@@ -153,10 +157,10 @@ for (i in 1:10){
                      day(title.end[take.tmp]),"/",
                      month(title.end[take.tmp])),side=3,line=0,cex=.9,font=2)
         # axis legend
-        if (i %in% c(1,5,8)){
+        if (i %in% 1:4){
                 mtext("Number",side=2,line=2.4,cex=.9)
         }
-        if (i %in% c(1:4,8:10)){
+        if (i %in% c(4,7,10)){
                 mtext("Ct",side=1,line=2,cex=.9)
         }
         # legend
@@ -170,25 +174,25 @@ for (i in 1:10){
         
 }
 # legend
-par(fig=c(0.75,1,0,0.67),new=T)
+par(fig=c(0.45,1,0,0.31),new=T)
 plot(NA,xlim=c(0,10),ylim=c(0,10),axes=F,xlab=NA,ylab=NA)
 # increasing
 text(0,9.8,"Increasing epidemic",adj=0)
-polygon(c(rep(0,2),rep(1,2)),c(9,9.2,9.2,9),col="orange", # all record by sampling
+polygon(c(rep(0,2),rep(1,2)),c(8.8,9,9,8.8),col="orange", # all record by sampling
         border="white")
-text(1.3,9.1,"Ct at sampling",adj=0)
-polygon(c(rep(0,2),rep(1,2)),c(8.5,8.7,8.7,8.5),col=alpha(col.option2[2],.55), # all record by onset
+text(1.3,8.9,"Ct at sampling",adj=0)
+polygon(c(rep(0,2),rep(1,2)),c(7.8,8,8,7.8),col=alpha(col.option2[2],.55), # all record by onset
         border="white")
-text(1.3,8.6,"Ct at onset",adj=0)
+text(1.3,7.9,"Ct at onset",adj=0)
 ###
 # increasing
-text(0,7.8,"Decreasing epidemic",adj=0)
-polygon(c(rep(0,2),rep(1,2)),c(7.1,7.3,7.3,7.1),col=col.option[1], # all record by sampling
+text(0,6.5,"Decreasing epidemic",adj=0)
+polygon(c(rep(0,2),rep(1,2)),c(5.5,5.7,5.7,5.5),col=col.option[1], # all record by sampling
         border="white")
-text(1.3,7.2,"Ct at sampling",adj=0)
-polygon(c(rep(0,2),rep(1,2)),c(6.6,6.8,6.8,6.6),col=alpha(col.option2[1],.7), # all record by onset
+text(1.3,5.6,"Ct at sampling",adj=0)
+polygon(c(rep(0,2),rep(1,2)),c(4.5,4.7,4.7,4.5),col=alpha(col.option2[1],.7), # all record by onset
         border="white")
-text(1.3,6.7,"Ct at onset",adj=0)
+text(1.3,4.6,"Ct at onset",adj=0)
 dev.off()
 ##
 ##-----

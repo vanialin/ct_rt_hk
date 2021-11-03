@@ -1,7 +1,6 @@
 #------------
 # sensitivity analysis
 # on age of sampled cases
-# Supplementary Fig. 3
 #------------
 #
 # load packages
@@ -10,11 +9,10 @@ require(e1071)
 ## data_ct: all individual Ct values (with test dates)
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
 ##                 daily Ct mean, median and skewness (imputed)
-##                 correspond to "Supplementary" data in source data file
 ######################################################
 # read in "data_ct.csv" and "data_daily_all.csv"
-ct.linelist <- read.csv("data_ct.csv")
-daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
+#ct.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_ct.csv")
+#daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_daily_all.csv",as.is=T)
 #
 data1 <- daily.linelist
 # add mean age (daily) and calculate daily Ct for adult samples only
@@ -34,6 +32,12 @@ data1$period <- ifelse(as.Date(data1$date)>=as.Date("2020-07-01")&
                        ifelse(as.Date(data1$date)>=as.Date("2020-11-01")&
                                       as.Date(data1$date)<=as.Date("2021-03-31"),2,0))
 table(data1$period) # checked
+#
+t.test(data1$mean[data1$period==1],data1$adult.mean[data1$period==1])
+t.test(data1$skewness[data1$period==1],data1$adult.skewness[data1$period==1])
+#
+t.test(data1$mean[data1$period==2],data1$adult.mean[data1$period==2])
+t.test(data1$skewness[data1$period==2],data1$adult.skewness[data1$period==2])
 #
 #----------
 ## get regression models (with/without age) --
@@ -70,7 +74,7 @@ x.month.pos <- c(0,(which(as.character(date.seq)%in%month.end)-1)) # for axis ti
 x.month.lab <- c("Nov","Dec","Jan","Feb","Mar")
 #
 ## start plotting
-pdf("Fig_S3.pdf",height=7,width = 12)
+pdf("Fig_S6.pdf",height=7,width = 12)
 fig.list <- list(c(0,0.25,0.6,1),
                  c(0.5,0.75,0.6,1),
                  c(0.25,0.5,0.6,1),
@@ -155,7 +159,7 @@ for (k in 1:length(x.month)){
 polygon(c(test.new$test.to.start,
           rev(test.new$test.to.start)),
         c(test.new$rt.lb,rev(test.new$rt.ub)),
-        col=alpha("pink",.2),border=F) 
+        col=alpha("pink",.3),border=F) 
 # adjusted for age
 for(i in 1:nrow(test.new)){
         lines(rep(test.new$test.to.start[i],2),c(test.new$upr[i],test.new$lwr[i]),

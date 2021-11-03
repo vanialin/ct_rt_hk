@@ -2,16 +2,13 @@
 # log-linear
 # Rt and Ct
 # also include reverse validation
-# By Lin Y. and Yang B.
-# August 2021
 #------------
 ######################################################
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
-##                 daily Ct mean, median and skewness (imputed) from "1_merge_data"
-##                 correspond to "Supplementary" data in source data file
+##                 daily Ct mean, median and skewness (imputed)
 ######################################################
 # read in "data_daily_all.csv"
-daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
+daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/data/data_daily_all.csv",as.is=T)
 #
 ######
 # correlation
@@ -42,6 +39,7 @@ for (i in 1:2){
                 correlation.rho(df.tmp, var1 = "skewness", var2 = "log.rt")
 }
 cor.mat[cor.mat==0] <- "<0.001"
+cor.mat
 ## export results
 # cor.mat - Supplementary Table 1
 #write.csv(cor.mat,"table_s1.csv",row.names=F)
@@ -51,6 +49,14 @@ cor.mat[cor.mat==0] <- "<0.001"
 #####
 train.period <- seq(as.Date("2020-07-06"),as.Date("2020-08-31"),1)
 train.data <- daily.linelist[daily.linelist$date%in%as.character(train.period),]
+# cross-correlation function (7*6)
+par(mfrow=c(3,1),mar=c(5,4,2,2)+0.1)
+ccf.mean <- ccf(train.data$mean,train.data$local.rt.mean,las=1,main=NA)
+mtext("a",side=3,adj=0,font=2,line=.5)
+ccf.median <- ccf(train.data$median,train.data$local.rt.mean,las=1,main=NA)
+mtext("b",side=3,adj=0,font=2,line=.5)
+ccf.skewness <- ccf(train.data$skewness,train.data$local.rt.mean,las=1,main=NA)
+mtext("c",side=3,adj=0,font=2,line=.5)
 #
 # model select on AIC
 # original form, Rt
@@ -92,24 +98,59 @@ summary(model.used) # get model coefficients and adjusted R^2
 est <- exp(predict(model.used,daily.linelist,interval = "prediction"))
 daily.est <- cbind(daily.linelist,est)
 #
-# Spearman rank correlation coefficients (rho)
-# between incidence- and Ct-based Rt
-# 
+### evaluation matrices (for consistency of estimates)
+### between incidence- and Ct-based Rt
+##
+# 1. Spearman rank correlation coefficients (rho)
+# 2. directional consistency
 cor.rt <- matrix(NA,2,2)
+consistency <- rep(NA,2)
 for (i in 1:2){
+        df.tmp <- daily.est[daily.est$period==i,]
         cortest.tmp <- 
-                with(daily.est[daily.est$period==i,],
-                     cor.test(log(local.rt.mean),log(fit),
-                              use="na.or.complete",method="spearman"))
+                with(df.tmp,cor.test(log(local.rt.mean),log(fit),
+                                     use="na.or.complete",method="spearman"))
         cor.rt[i,1] <- round(cortest.tmp$est,2)
         cor.rt[i,2] <- round(cortest.tmp$p.value,2)
+        consistency[i] <- 
+                nrow(df.tmp[((df.tmp$local.rt.mean-1)*(df.tmp$fit-1))>0,])/
+                nrow(df.tmp)
 }
-cor.rt
+cor.rt;consistency*100
 #
+#
+# 3. under various case counts
+summary(daily.est$records)
+case.cut <- mean(daily.est$records)
+daily.est$case.cut <- 1+1*(daily.est$records>0.5*case.cut)+
+        1*(daily.est$records>case.cut)+1*(daily.est$records>2*case.cut)
+table(daily.est$case.cut,useNA = 'always')
+with(daily.est,table(period,case.cut,useNA = 'always'))
+cor.rt2 <- matrix(NA,4,9)
+period.list <- list(c(1,2),1,2)
+for (j in 1:3){
+        for (i in 1:4){
+                df.tmp <- daily.est[daily.est$case.cut==i&
+                                            daily.est$period%in%period.list[[j]],]
+                cortest.tmp <- 
+                        with(df.tmp,cor.test(log(local.rt.mean),log(fit),
+                                             use="na.or.complete",method="spearman"))
+                cor.rt2[i,3*(j-1)+1] <- 
+                        paste0(nrow(df.tmp),"/",
+                               nrow(daily.est[daily.est$period%in%period.list[[j]],]),"(",
+                               round((nrow(df.tmp)/nrow(daily.est[daily.est$period%in%period.list[[j]],]))*100,0),"%)")
+                cor.rt2[i,3*(j-1)+2] <- round(cortest.tmp$est,2)
+                cor.rt2[i,3*j] <- round(cortest.tmp$p.value,2)
+        }
+}
+## export as table
+cor.rt2[cor.rt2==0] <- "<0.01"
+#write.csv(cor.rt2,"table_s4_new.csv",row.names=F)
+#
+##
 ## export estimated daily Ct-based Rt
 # daily.est - daily estimated Ct-based Rt
 #write.csv(daily.est,"daily_ct_rt.csv",row.names = F)
-# correspond to "Figure 2" data in source data file
 ##
 #--------------
 #####
