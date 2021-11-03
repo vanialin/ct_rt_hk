@@ -1,11 +1,23 @@
-#### responses to comments ####
-
+#------------
+# sensitivity analysis
+# on proportion of symptomatic
+# Fig. S7
+# By Lin.Y
+# October 2021
+#------------
+#
+# load packages
+require(e1071)
 require(mgcv)
-##
-## reviewer 2 comment 2: impact of changes in case proportion in Ct ##
+#
+######################################################
+## data_ct: all individual Ct values (with test dates)
+## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
+##                 daily Ct mean, median and skewness (imputed)
+######################################################
 ## 1) symptomatic 
 #ct.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_ct.csv")
-#daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/result/daily_ct_bootstrap.csv",as.is=T)
+#daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_daily_all.csv",as.is=T)
 #
 data1 <- daily.linelist
 # add mean age (daily) and calculate daily Ct for adult samples only
@@ -53,9 +65,11 @@ pred.original <- exp(predict(lm.main,test.new,interval = "prediction"))
 test.new[,c("rt.est","rt.lb","rt.ub")] <- pred.original
 #  (time indicator) for plotting
 test.new$test.to.start <- as.numeric(as.Date(test.new$date)-date.start)
+
 #
-#----------
-## prepare plotting elements
+#
+
+##  plotting elements
 date.seq <- seq(date.start,as.Date("2021-03-31"),1)
 x.length <- length(date.seq)
 month.end <- c("2020-11-30","2020-12-31","2021-01-31","2021-02-28","2021-03-31")

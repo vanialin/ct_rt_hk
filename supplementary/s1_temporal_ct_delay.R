@@ -21,6 +21,8 @@ require(scales)
 # read in "data_ct.csv" and "data_cases.csv"
 ct.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/data/data_ct.csv")
 daily.ct <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/result/daily_ct_bootstrap.csv")
+#
+
 # plotting elements
 # elements
 # x-axis

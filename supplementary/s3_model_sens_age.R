@@ -1,10 +1,14 @@
 #------------
 # sensitivity analysis
 # on age of sampled cases
+# Fig. S6
+# By Lin.Y and Yang.B
+# updated October 2021
 #------------
 #
 # load packages
 require(e1071)
+#
 ######################################################
 ## data_ct: all individual Ct values (with test dates)
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
@@ -14,6 +18,7 @@ require(e1071)
 #ct.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_ct.csv")
 #daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_daily_all.csv",as.is=T)
 #
+
 data1 <- daily.linelist
 # add mean age (daily) and calculate daily Ct for adult samples only
 data1$mean.age <- data1$adult.skewness <- data1$adult.mean <- NA
