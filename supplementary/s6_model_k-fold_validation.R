@@ -1,7 +1,7 @@
 #------------
 # model validation
 # 10-fold cross validation
-# By Lin.Y and Yang.B
+# By Yang.B and Lin.Y
 # August 2021
 #------------
 ######################################################
