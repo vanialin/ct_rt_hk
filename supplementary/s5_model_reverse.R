@@ -1,6 +1,8 @@
 #------------
 # reverse validation
-# ED.Fig 4 in paper
+# Fig. S8
+# By Yang.B 
+# August 2021
 #------------
 #
 # load packages
@@ -194,7 +196,7 @@ p = grid.arrange(
                               c(3, 3))
 )
 ## export results 
-ggsave('ED_Fig_4.pdf',p,width = 12, height = 8)
+ggsave('Fig_S8.pdf',p,width = 12, height = 8)
 ##
 #####
 

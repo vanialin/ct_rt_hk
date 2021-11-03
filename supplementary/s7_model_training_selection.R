@@ -1,14 +1,21 @@
 #-----------
-# training period
-# length and timing
+# selection on training period
+# Fig. S9
+# By Lin.Y
+# updated October 2021
 #-----------
+#
+# load packages
+require(lubridate)
+require(plotrix)
+require(dplyr)
+require(pBrackets)
 #
 ######################################################
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
 ##                 daily Ct mean, median and skewness (imputed)
 ######################################################
-require(lubridate)
-require(plotrix)
+#
 # read in "data_daily_all.csv"
 #daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_daily_all.csv",as.is=T)
 #
@@ -17,61 +24,50 @@ startdate <- c("2020-07-04","2020-11-10")
 enddate.for.plot <- as.Date(startdate)+60+20-1
 #
 days.select <- c(30,40,50,60) # covering XX days
-r.sqr.mat <- case.count.mat <- matrix(NA,20,8)  
+r.sqr.mat <- matrix(NA,20,8)  
 case.period <- list()
 for (i in 1:2){ # for wave 3 and wave 4
         date.seq <- seq(as.Date(startdate[i]),as.Date(enddate.for.plot[i]),1)
         df.take <- daily.linelist[daily.linelist$date%in%as.character(date.seq),]
         case.period[[i]] <- df.take
         for (n in 1:4){ # 4 length of days covered in the training set
-                for (k in 1:20){ # 30 sets each
+                for (k in 1:20){ # 20 sets each
                         df.tmp <- df.take[k:(k+days.select[n]),]
                         lm.tmp <- 
                                 lm(log(local.rt.mean)~mean+skewness.imputed,
                                    data=df.tmp)
                         r.sqr.mat[k,4*(i-1)+n] <- summary(lm.tmp)$adj.r.square
-                        case.count.mat[k,4*(i-1)+n] <- 
-                                sum(df.tmp$records)/nrow(df.tmp)
                 }
         }
 }
+
+#
 #
 
-#### added analyses
-### 1. average case count
-case.count.summary <- NULL
-for (i in 1:nrow(r.sqr.mat)){
-        for (k in 1:ncol(r.sqr.mat)){
-                if (r.sqr.mat[i,k]>=0.7){
-                        case.count.summary <- 
-                                c(case.count.summary,case.count.mat[i,k])
-                }
-        }
-}
-summary(case.count.summary) # median (IQR) = 85 (78, 90)
-
-### 2. using former to predict latter in wave 4
+## try to using former to predict latter in wave 4
 r.sqr.training <- r.sqr.mat[,5:8]
-max(r.sqr.training)
 which(r.sqr.training==max(r.sqr.training),arr.ind = T)
 
-date.tmp <- seq(as.Date(startdate[2])+13,as.Date(startdate[2])+13+20-1,1)
+date.tmp <- seq(as.Date(startdate[2])+12,as.Date(startdate[2])+12+20-1,1)
 test.tmp <- daily.linelist[daily.linelist$date%in%as.character(date.tmp),]
 lm.test <- lm(log(local.rt.mean)~mean+skewness.imputed,data=test.tmp)
 summary(lm.test)
 
-## compare with main training model
+# compare with main training model
 train.period <- seq(as.Date("2020-07-06"),as.Date("2020-08-31"),1)
 train.tmp <- daily.linelist[daily.linelist$date%in%as.character(train.period),]
 lm.train <- lm(log(local.rt.mean)~mean+skewness.imputed,data=train.tmp)
-
-####
-## test with following 51 days (already cover the January peak)
+#
+#
+## test with following 51 days (covering the January peak)
 pred.tmp <- daily.linelist[daily.linelist$date%in%as.character(max(date.tmp)+1:51),]
+# main model
 pred.tmp[,c("fit1","lwr1","upr1")] <- 
         exp(predict(lm.train,pred.tmp,interval = "prediction"))
+# alternative model built in earlier wave 4
 pred.tmp[,c("fit2","lwr2","upr2")] <- 
         exp(predict(lm.test,pred.tmp,interval = "prediction"))
+# directional consistency similar
 sum(((pred.tmp$local.rt.mean-1)*(pred.tmp$fit1-1))>=0)/nrow(pred.tmp) # 75%
 sum(((pred.tmp$local.rt.mean-1)*(pred.tmp$fit2-1))>=0)/nrow(pred.tmp) # 78%
 
@@ -80,7 +76,9 @@ test.tmp$date <- as.Date(test.tmp$date)
 plot.tmp <- bind_rows(test.tmp,pred.tmp) %>% 
         mutate(period=1+1*(date>as.Date(max(test.tmp$date))))
 
-#----------
+#
+#
+
 ## plot out
 pdf("Fig_S9.pdf",height = 10,width = 10)
 par(mar=c(4,4,2,3)+0.1)
@@ -88,7 +86,6 @@ fig.list <- list(c(0,0.35,0.65,1),
                  c(0,0.35,0.35,0.7),
                  c(0.3,1,0.65,1),
                  c(0.3,1,0.35,0.7))
-#start.background <- c(which.max(r.sqr.mat[,1]),which.max(r.sqr.mat[,5]))
 col.plot <- c("#493267","#9e379f","#e86af0","#7bb3ff")
 leg.here <- c("a","b","c","d")
 #
@@ -104,8 +101,6 @@ for (i in 1:2){
                 if (i == 1){
                         lines(c(5,6)+4*(n-1),rep(0.95,2),col=col.plot[n],lwd=2)
                         text(6.5+4*(n-1),0.95,days.select[n],adj=0)
-                        #lines(c(16,17.5),rep(1.08-0.08*n,2),col=col.plot[n],lwd=2)
-                        #text(18,1.08-0.08*n,days.select[n],adj=0)
                 }
         }
         #
@@ -135,6 +130,7 @@ for (i in 1:2){
         #
         mtext(leg.here[i],side=3,adj=0,line=0,font=2,cex=1.3)
 }
+#
 #
 for (i in 1:2){
         df.tmp <- case.period[[i]]
@@ -194,11 +190,9 @@ for (i in 1:2){
         mtext("Numbers",side=2,line=2.5)
         mtext(leg.here[i+2],side=3,adj=0,line=0,font=2,cex=1.3)
 }
-##
-
-##
-
-####
+#
+#
+## ADDED ##
 par(mar=c(3,4,2,4)+0.1)
 par(fig=c(0,1,0,0.38),new=T)
 plot(NA,xlim=c(1,nrow(plot.tmp)),ylim=c(0,150),las=1,axes=F,xlab=NA,ylab=NA)
@@ -212,7 +206,7 @@ for (j in 1:length(vec)){
               side=1,at=vec[j],line=.5) 
 }
 mtext("Date",side=1,line=1.2)
-## plotting elements
+# plotting elements
 for (i in 1:nrow(plot.tmp)){
         polygon(c(rep(i-0.5,2),rep(i+0.5,2)),
                 c(0,rep(plot.tmp$records[i],2),0),col=alpha("grey",.5),border = "white")
@@ -228,7 +222,8 @@ polygon(c(1:nrow(plot.tmp),rev(1:nrow(plot.tmp))),
         c(plot.tmp$local.rt.lower,rev(plot.tmp$local.rt.upper)),
         col = alpha("grey",.5),border=F)
 lines(1:nrow(plot.tmp),plot.tmp$local.rt.mean,lwd=2)
-###
+#
+#
 polygon(c(1:nrow(plot.tmp),rev(1:nrow(plot.tmp))),
         c(plot.tmp$lwr1,rev(plot.tmp$upr1)),
         col = alpha("pink",.3),border=F)
@@ -239,8 +234,8 @@ for (i in 1:nrow(plot.tmp)){
         points(i,plot.tmp$fit2[i],col="#7bb3ff",pch=19,cex=.5)
 }
 mtext("e",side=3,font=2,adj=0,line=.5,cex=1.3)
-###
-## legend
+#
+# legends
 col.vec <- c(1,"pink","#7bb3ff")
 text.vec <- c("Incidence-based Rt",
               "Ct-based Rt, using main model",
@@ -251,8 +246,7 @@ for (i in 1:3){
 }
 
 dev.off()
-
-
+##
 #####
 
 ## end of script

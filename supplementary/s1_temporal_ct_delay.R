@@ -1,9 +1,9 @@
 #------------
 # temporal distribution of
 # first Ct and testing delays
-# 2-panel box plots (Fig S1)
+# Fig S1
 # BY Lin Y.
-# October 2021
+# updated October 2021
 #------------
 #
 # load packages
