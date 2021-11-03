@@ -6,7 +6,6 @@
 
 evaluate_daily_funcs <- function(rt0,ct0,sim_dyn, # input data
                                  ## demanded by nested function
-                                 extra, 
                                  add_legend){
         # sim_dyn = seir_dynamics (sourced, simulation truth)
         start_date <- as.Date("2020-07-01") # day 0 for simulation
@@ -31,8 +30,7 @@ evaluate_daily_funcs <- function(rt0,ct0,sim_dyn, # input data
         ##
         #### correlation and regression 
         # define training period
-        result <- select_training_period(ct4,time_frame = "1d",
-                                         extra = extra,include_skew = T)
+        result <- select_training_period(ct4)
         training_period <- seq(result$period[1],
                                result$period[2],1)
         
