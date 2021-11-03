@@ -1,10 +1,25 @@
 #------------
-# temporal distribution
-# first Ct and delays
-# 2-panel box plots
+# temporal distribution of
+# first Ct and testing delays
+# 2-panel box plots (Fig S1)
+# BY Lin Y.
+# October 2021
 #------------
+#
+# load packages
 require(plotrix)
-#ct.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/data/data_ct.csv")
+require(lubridate)
+require(dplyr)
+require(scales)
+#
+######################################################
+## data_ct: all individual Ct values (with test dates)
+## daily_ct_bootstrap: daily case counts/sample counts, incidence-based Rt; 
+##                     daily Ct mean, median and skewness (imputed)
+##                     CIs calculated for GAM Ct and skewness (from "2_ct_for_bootstrap")
+######################################################
+# read in "data_ct.csv" and "data_cases.csv"
+ct.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/data/data_ct.csv")
 daily.ct <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/result/daily_ct_bootstrap.csv")
 # plotting elements
 # elements
@@ -47,13 +62,13 @@ month.title <- c("Training period","Testing period")
 start.vec <- c(0,71)
 #
 
-# get the median delay in advance
+### prepare the median for both delay and Ct
 median.ct.list <- median.delay.list <- mbs.list <- list()
 for (i in 1:2){
         df.used <- # sort by date.test
-                ct.linelist[as.numeric(as.Date(ct.linelist2$date.test)-
+                ct.linelist[as.numeric(as.Date(ct.linelist$date.test)-
                                                  as.Date(start.date[i]))>=0 & 
-                                      as.numeric(as.Date(ct.linelist2$date.test)-
+                                      as.numeric(as.Date(ct.linelist$date.test)-
                                                          as.Date(end.date[i]))<=0,]
         df.used$test.to.start <- 
                 as.numeric(as.Date(df.used$date.test)-as.Date(start.date[i]))
@@ -145,7 +160,7 @@ for (i in 1:2){
         df.bs.list[[i]] <- df.bootstrap
 }
 #
-## get CI for GAM Ct and skewness
+## get CI for GAM delay
 value.bs.list <- list()
 for (i in 1:2){
         df.bootstrap <- df.bs.list[[i]]
