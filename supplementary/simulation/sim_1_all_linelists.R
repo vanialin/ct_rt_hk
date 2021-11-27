@@ -67,8 +67,7 @@ times_extended <-c(times,max(times):(max(times)+50))
 ### simulate linelist for infection (incidence) ----
 set.seed(1) 
 seir_dynamics <- simulate_seir_wrapper(population_n=population_n,solve_times=times,
-                                       pars=pars, ver="odin",switch_model = T,
-                                       beta_smooth = 0.8)
+                                       pars=pars, switch_model = T,beta_smooth = 0.8)
 
 # simple checking
 plot(seir_dynamics$seir_outputs$inc,las=1)
@@ -121,8 +120,7 @@ for (i in 1:2){
                 simulate_reporting(vl_full,
                                    frac_report = 0.25-0.15*(i==2), 
                                    solve_times=times, 
-                                   symptomatic=T)$sampled_individual %>% 
-                arrange(infection_time)
+                                   symptomatic=T) %>% arrange(infection_time)
         #case_flat_limited[[i]] <- case_flat_limited_tmp
         #write_csv(x=case_flat_limited_tmp,path=paste0(path_linelist,"vl_obs_scenario",i,".csv"))
 }
@@ -141,7 +139,7 @@ case_varying <-
         simulate_reporting(vl_full,
                            timevarying_prob = prob_varying, 
                            solve_times=times, 
-                           symptomatic=T)$sampled_individual %>% arrange(infection_time)
+                           symptomatic=T) %>% arrange(infection_time)
 
 #write_csv(x=case_varying,path=paste0(path_linelist,"vl_obs_scenario3.csv"))
 
@@ -159,7 +157,7 @@ prob_ud <- tibble(t=times_extended,
 #
 case_ud <-  simulate_reporting(vl_full,timevarying_prob = prob_ud, 
                                solve_times=times, 
-                               symptomatic=T)$sampled_individual %>% 
+                               symptomatic=T) %>% 
         arrange(infection_time)
 #write_csv(x=case_ud,path=paste0(path_linelist,"vl_obs_scenario4.csv"))
 ##        
