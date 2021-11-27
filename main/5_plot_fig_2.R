@@ -95,7 +95,7 @@ predPlot = function(ct, period, panel){
                                                        name = 'Rt')) +
                 
                 scale_x_date(name = 'Date',
-                             limits = dates,
+                             limits = c(dates[1]-1,dates[2]+1),
                              date_breaks = "1 week", 
                              date_labels = "%d/%m",
                              expand = c(0.01, 0.01))  +

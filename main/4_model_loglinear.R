@@ -52,16 +52,6 @@ cor.mat
 #####
 train.period <- seq(as.Date("2020-07-06"),as.Date("2020-08-31"),1)
 train.data <- daily.linelist[daily.linelist$date%in%as.character(train.period),]
-#
-### cross-correlation function (for checking lag/lead)
-# 7*6
-par(mfrow=c(3,1),mar=c(5,4,2,2)+0.1)
-ccf.mean <- ccf(train.data$mean,train.data$local.rt.mean,las=1,main=NA)
-mtext("a",side=3,adj=0,font=2,line=.5)
-ccf.median <- ccf(train.data$median,train.data$local.rt.mean,las=1,main=NA)
-mtext("b",side=3,adj=0,font=2,line=.5)
-ccf.skewness <- ccf(train.data$skewness,train.data$local.rt.mean,las=1,main=NA)
-mtext("c",side=3,adj=0,font=2,line=.5)
 
 #
 #
@@ -129,31 +119,32 @@ cor.rt;consistency*100
 #
 # 3. under various case counts
 summary(daily.est$records)
-case.cut <- mean(daily.est$records)
-daily.est$case.cut <- 1+1*(daily.est$records>0.5*case.cut)+
-        1*(daily.est$records>case.cut)+1*(daily.est$records>2*case.cut)
-table(daily.est$case.cut,useNA = 'always')
+daily.est$case.cut <- 1+1*(daily.est$records>15)+1*(daily.est$records>30)+1*(daily.est$records>60)
 with(daily.est,table(period,case.cut,useNA = 'always'))
-cor.rt2 <- matrix(NA,4,9)
+cor.rt2 <- matrix(NA,4,9) 
 period.list <- list(c(1,2),1,2)
 for (j in 1:3){
         for (i in 1:4){
                 df.tmp <- daily.est[daily.est$case.cut==i&
                                             daily.est$period%in%period.list[[j]],]
-                cortest.tmp <- 
-                        with(df.tmp,cor.test(log(local.rt.mean),log(fit),
-                                             use="na.or.complete",method="spearman"))
+                if (sum(!is.na(df.tmp$fit))>3){
+                        cortest.tmp <- 
+                                with(df.tmp,cor.test(log(local.rt.mean),log(fit),
+                                                     use="na.or.complete",method="spearman"))
+                        
+                        cor.rt2[i,3*(j-1)+2] <- round(cortest.tmp$est,2)
+                        cor.rt2[i,3*j] <- round(cortest.tmp$p.value,2)
+                }
+                
                 cor.rt2[i,3*(j-1)+1] <- 
                         paste0(nrow(df.tmp),"/",
                                nrow(daily.est[daily.est$period%in%period.list[[j]],]),"(",
                                round((nrow(df.tmp)/nrow(daily.est[daily.est$period%in%period.list[[j]],]))*100,0),"%)")
-                cor.rt2[i,3*(j-1)+2] <- round(cortest.tmp$est,2)
-                cor.rt2[i,3*j] <- round(cortest.tmp$p.value,2)
         }
 }
 ## export as table
 cor.rt2[cor.rt2==0] <- "<0.01"
-#write.csv(cor.rt2,"table_s4_new.csv",row.names=F)
+#write.csv(cor.rt2,"table_s4.csv",row.names=F)
 #
 ##
 ## export estimated daily Ct-based Rt
@@ -167,7 +158,7 @@ cor.rt2[cor.rt2==0] <- "<0.01"
 #####
 #
 # get models build over the alternative training period 
-train.period2 <- seq(as.Date("2020-11-20"),as.Date("2020-12-31"),1)
+train.period2 <- seq(as.Date("2020-11-20"),as.Date("2020-12-19"),1)
 train.data2 <- daily.linelist[daily.linelist$date%in%as.character(train.period2),]
 model.validate <- lm(log(local.rt.mean)~mean+skewness.imputed,data=train.data2)
 #
