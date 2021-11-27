@@ -1,14 +1,15 @@
 #------------
 # sensitivity analysis
 # on proportion of symptomatic
-# Fig. S7
-# By Lin.Y
+# Fig. S6
+# By Lin.Y and Yang.B
 # October 2021
 #------------
 #
 # load packages
 require(e1071)
 require(mgcv)
+require(lubridate)
 #
 ######################################################
 ## data_ct: all individual Ct values (with test dates)
@@ -57,7 +58,7 @@ summary(lm.symp)
 date.start <- as.Date("2020-11-20")
 test.period <- seq(date.start,as.Date("2021-03-26"),1)
 test.new <- data1[data1$date%in%as.character(test.period),]
-# Ct-based Rt estimates after adjusted for daily mean age
+# Ct-based Rt estimates after restricting to symptomatic records only
 pred.test <- exp(predict(lm.symp,test.new,interval = "prediction"))
 test.new <- cbind(test.new,pred.test)
 # Ct-based Rt estimates from all Ct records
@@ -65,6 +66,8 @@ pred.original <- exp(predict(lm.main,test.new,interval = "prediction"))
 test.new[,c("rt.est","rt.lb","rt.ub")] <- pred.original
 #  (time indicator) for plotting
 test.new$test.to.start <- as.numeric(as.Date(test.new$date)-date.start)
+
+t.test(test.new$rt.est,test.new$fit) # p=0.19
 
 #
 #
@@ -80,16 +83,68 @@ x.month.pos <- c(0,(which(as.character(date.seq)%in%month.end)-1)) # for axis ti
 x.month.lab <- c("Nov","Dec","Jan","Feb","Mar")
 #
 #
-#### plot out (7*12)
-## panel a-b
-par(mar=c(3,3,2,1)+0.1)
-fig.list <- list(c(0,0.25,0.6,1),
-                 c(0.5,0.75,0.6,1),
-                 c(0.25,0.5,0.6,1),
-                 c(0.75,1,0.6,1))
-par(fig=c(0,1,0,1))
-plot(NA,xlim=c(0,10),ylim=c(0,10),axes=F,type="n")
-text.add <- c("a","b")
+#### plot out
+# panel a
+#pdf("Fig_S6.pdf",height = 9,width = 11)
+par(fig=c(0,1,0.67,1),mar=c(2,3,2,1)+0.1)
+plot(NA,xlim=c(1,x.length),ylim=c(0,150),axes=F,xlab=NA)
+# x-axis
+day.axis <- 1:(x.length-1)
+axis(1,at=day.axis,labels = rep(NA,length(day.axis)),tck=-.007)
+axis(1,at=pos.weekend,labels = week.end,las=1,tck=-.012,padj=-.8)
+axis(1,at=x.month.pos,labels = rep(NA,length(x.month.pos)),tck=-.025)
+for (k in 1:length(x.month)){
+        mtext(x.month.lab[k],side=1,line=1.3,at=x.month[k],adj=0)
+} 
+# add axis legend separately
+for (i in 1:2){
+        axis(1,at=x.month.pos[[i]],
+             labels = rep(NA,length(x.month.pos[[i]])),tck=-.06)
+}
+# y-axis
+axis(2,at=0:5*30,las=1,line=-.4)
+mtext("Number of records",side=2,line=1.8)
+mtext("Date of sampling",side=1,line=2.1)
+#
+for (i in 1:nrow(test.new)){
+        polygon(c(rep(i-0.5,2),rep(i+0.5,2)), # all records
+                c(0,rep(test.new$records[i],2),0),col="#838584",border = "white")
+        polygon(c(rep(i-0.5,2),rep(i+0.5,2)), # symptomatic records
+                c(0,rep(test.new$symp.record[i],2),0),col=alpha("light blue",.75),
+                border = "white")
+}
+# legends
+polygon(c(41,41,43,43),c(145,150,150,145),col="#838584",border="white")
+text(43.5,147.5,"Records for all cases",adj=0)
+polygon(c(41,41,43,43),c(133,138,138,133),col=alpha("light blue",.75),border="white")
+text(43.5,135.5,"Records for symptomatic cases",adj=0)
+mtext("a",side=3,adj=0,font=2,cex=1.3,line=.5)
+#
+### sub-plot
+test.new$prop <- test.new$symp.record/test.new$records
+par(fig=c(0.6,1,0.8,1),new=T)
+plot(NA,xlim=c(1,x.length),ylim=c(0,1),xlab=NA,las=1,ylab=NA,axes=F)
+# x-axis
+day.axis <- 1:(x.length-1)
+axis(1,at=day.axis,labels = rep(NA,length(day.axis)),tck=-.01)
+axis(1,at=x.month.pos,labels = rep(NA,length(x.month.pos)),tck=-.04)
+for (k in 1:length(x.month)){
+        mtext(x.month.lab[k],side=1,line=0,at=x.month[k]-2,adj=0,cex=.8)
+} 
+# y-axis
+axis(2,las=1)
+lines(c(1,nrow(test.new)),rep(.7,2),col="red",lty=2,lwd=1.3)
+lines(1:nrow(test.new),test.new$prop)
+mtext("Proportion of symptomatic records",side=3,adj=0,at=-.5)
+#
+#
+## panel b-c
+par(mar=c(2,3,2,1)+0.1)
+fig.list <- list(c(0,0.25,0.35,0.65),
+                 c(0.5,0.75,0.35,0.65),
+                 c(0.25,0.5,0.35,0.65),
+                 c(0.75,1,0.35,0.65))
+text.add <- c("b","c")
 for (i in 1:2){
         df.tmp <- data1[data1$period==i,]
         par(fig=fig.list[[2*(i-1)+1]],new=T)
@@ -106,10 +161,10 @@ for (i in 1:2){
         if (i == 1){
                 mtext("Daily mean Ct",side=2,line=2.1)
                 mtext(text.add[1],side=3,cex=1.3,font=2,line=.5,at=0)
-                polygon(c(1.1,1.1,1.3,1.3),c(15,16,16,15),col="#ffc425")
-                text(1.35,15.5,"All cases",adj=0)
-                polygon(c(1.1,1.1,1.3,1.3),c(17,18,18,17),col="white")
-                text(1.35,17.5,"Symptomatic cases",adj=0)  
+                polygon(c(0.5,0.5,0.7,0.7),c(15,16,16,15),col="#ffc425")
+                text(0.75,15.5,"All cases",adj=0)
+                polygon(c(0.5,0.5,0.7,0.7),c(17,18,18,17),col="white")
+                text(0.75,17.5,"Symptomatic cases",adj=0)  
         }
         mtext(paste0("Wave ",i+2),side=3,font=2)
         # adult
@@ -129,23 +184,23 @@ for (i in 1:2){
         if (i == 1){
                 mtext("Daily Ct skewness",side=2,line=2.5)
                 mtext(text.add[2],side=3,cex=1.3,font=2,line=.5,at=0)  
-                polygon(c(1.1,1.1,1.3,1.3),c(1.4,1.5,1.5,1.4),col="#00b159")
-                text(1.35,1.45,"All cases",adj=0)
-                polygon(c(1.1,1.1,1.3,1.3),c(1.2,1.3,1.3,1.2),col="white")
-                text(1.35,1.25,"Symptomatic cases",adj=0)
+                polygon(c(0.5,0.5,0.7,0.7),c(1.4,1.5,1.5,1.4),col="#00b159")
+                text(0.75,1.45,"All cases",adj=0)
+                polygon(c(0.5,0.5,0.7,0.7),c(1.2,1.3,1.3,1.2),col="white")
+                text(0.75,1.25,"Symptomatic cases",adj=0)
         } 
 }
 #
-# panel c
-par(fig=c(0,1,0,0.6),mar=c(4,3,2,1)+0.1,new=T)
+# panel d
+par(fig=c(0,1,0,0.33),mar=c(4,3,2,1)+0.1,new=T)
 plot(NA,xlim=c(1,x.length),ylim=c(0,5),axes=F,xlab=NA)
 # x-axis
 day.axis <- 1:(x.length-1)
 axis(1,at=day.axis,labels = rep(NA,length(day.axis)),tck=-.007)
-axis(1,at=pos.weekend,labels = week.end,las=1,tck=-.012)
+axis(1,at=pos.weekend,labels = week.end,las=1,tck=-.012,padj=-.8)
 axis(1,at=x.month.pos,labels = rep(NA,length(x.month.pos)),tck=-.025)
 for (k in 1:length(x.month)){
-        mtext(x.month.lab[k],side=1,line=2.5,at=x.month[k],adj=0)
+        mtext(x.month.lab[k],side=1,line=1.3,at=x.month[k],adj=0)
 } 
 # add axis legend separately
 for (i in 1:2){
@@ -155,7 +210,8 @@ for (i in 1:2){
 lines(test.new$test.to.start,test.new$rt.est,type="l",col="pink")
 # y-axis
 axis(2,at=0:5,las=1,line=-.4)
-mtext("Rt",side=2,line=1.4)
+mtext("Rt",side=2,line=1.8)
+mtext("Date",side=1,line=2.1)
 lines(c(1,x.length),rep(1,2),lty=2)
 polygon(c(test.new$test.to.start,
           rev(test.new$test.to.start)),
@@ -168,13 +224,14 @@ for(i in 1:nrow(test.new)){
 }
 lines(test.new$test.to.start,test.new$fit,col="#00b8ff",type="p",cex=.8,pch=16)
 # legends
-lines(c(40,43),rep(5,2),col="pink",lwd=2)
-points(41.5,5,col="pink",pch=16)
-lines(c(40,43),rep(4.5,2),col="#00b8ff",lwd=2)
-points(41.5,4.5,col="#00b8ff",pch=16)
-text(43.5,5,"Ct predicted Rt, using all records",adj=0)
-text(43.5,4.5,"Ct predicted Rt, using only symptomatic records",adj=0)
-mtext("c",side=3,adj=0,font=2,cex=1.3,line=.5)
+lines(c(40,43),rep(4.8,2),col="pink",lwd=2)
+points(41.5,4.8,col="pink",pch=16)
+lines(c(40,43),rep(4.3,2),col="#00b8ff",lwd=2)
+points(41.5,4.3,col="#00b8ff",pch=16)
+text(43.5,4.8,"Ct predicted Rt, using all records",adj=0)
+text(43.5,4.3,"Ct predicted Rt, using only symptomatic records",adj=0)
+mtext("d",side=3,adj=0,font=2,cex=1.3,line=.5)
+dev.off()
 ##
 #####
 

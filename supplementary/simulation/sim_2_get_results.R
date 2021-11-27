@@ -1,9 +1,17 @@
+#------------
+# simulation
+# Fig. S9-10
+# fitting results under 4 scenarios
+# November 2021
+#------------
+
 options(mc.cores = 4)
 require(lubridate)
 require(gridExtra)
 require(chron)
 #source(paste0(path,"/sim_funcs_all.R"))
 
+#### get incidence-based Rt ####
 ###
 ### delay distributions
 set.seed(1)
@@ -18,27 +26,27 @@ generation_time <- list(mean=SI_mean,mean_sd=3,sd=SI_sd,sd_sd=3,max=100)
 reporting_delay <- 
         bootstrapped_dist_fit(rgamma(1000,shape=1.83,rate=0.43),max_value = 25)
 
-
 ##
 #### RUN IN WINDOWS ####
 for (i in 1:4){
-        ct_tmp <- read.csv(paste0(path_observe,"vl_obs1_scenario",i,".csv")) 
+        ct_tmp <- read.csv(paste0(path_linelist,"vl_obs_scenario",i,".csv")) 
         get_inc_Rt(ct_tmp,n1=1,n2=i)
 }
 
 #
 #
 
-##
+#### get all results for plotting ####
+###
 #### RUN IN MAC ####
-### read in Rt and get results for each linelist of cases detected
-load(file=paste0(path_simulate,"SEIR_dynamics",1,".Rda"))
+### read in Rt and get results for each line list of cases detected
+load(file=paste0(path_linelist,"SEIR_dynamics.Rda"))
 
 ct_list <- rt_list <- result_list <- NULL
 fit_training_list <- fit_testing_list <- box_list <- NULL
 #input_range_all <- c(rep(as.Date("2020-10-19")+c(0,50),3),c(as.Date("2020-11-14")+c(0,40)))
 for (i in 1:4){
-        ct_tmp <- read_csv(paste0(path_observe,"vl_obs1_scenario",i,".csv"))
+        ct_tmp <- read_csv(paste0(path_linelist,"vl_obs_scenario",i,".csv"))
         rt_tmp <- read_csv(paste0(path_rt,"rt_obs1_scenario",i,".csv"))
         ct_list[[i]] <- ct_tmp
         rt_list[[i]] <- rt_tmp
@@ -55,8 +63,8 @@ for (i in 1:4){
 #
 #
 
-#### combine plots
-##### supplementary (14*8,sup1) ----
+#### plots
+##### Figure S9 (14*8) ----
 #### plot simulation truth
 ## 1. case counts
 case_truth <- complete_linelist%>%
@@ -171,8 +179,6 @@ fig_list <- list(c(0,1,0.57,0.78),
                  c(0,1,0.19,0.4),
                  c(0,1,0,0.21))
 for (k in 1:4){
-        #par(fig=c(0,1,0.73-0.2*(k-1),0.8-0.2*(k-1)),mar=c(2,4,2,2)+0.1,new=T)
-        #plot(NA,xlim=c(1,length(dates_all)),ylim=c(0.25,0.5),axes=F,xlab=NA,ylab=NA)
         par(fig=fig_list[[k]],mar=c(3,4,2,2)+0.1,new=T)
         y_upper <- round(max(count_list[[k]]$infect_count,na.rm = T),digits = -2)
         plot(NA,xlim=c(1,nrow(case_truth)),ylim=c(0,y_upper*1.03),axes=F,xlab=NA,ylab=NA)
@@ -235,7 +241,6 @@ for (i in 1:4){
                                "rt_est","fit")[2,c(1,2,4)]
 }
 
-#write.csv(mat_out,"table_s5.csv",row.names = F)
 rho_vec <- mat_out[1:4,4]
 for (i in 1:4){
         box_list[[i]] <- boxplot_func(result_list[[i]]%>%filter(period==2),
@@ -249,7 +254,7 @@ grid.arrange(grobs=list(
         fit_training_list[[1]],fit_testing_list[[1]],box_list[[1]],
         fit_training_list[[2]],fit_testing_list[[2]],box_list[[2]],
         fit_training_list[[3]],fit_testing_list[[3]],box_list[[3]],
-        fit_training_list[[4]],fit_testing_list[[4]],box_list[[4]]), ## example of how to arrange it
+        fit_training_list[[4]],fit_testing_list[[4]],box_list[[4]]), 
         heights = rep(1,4),
         widths = c(2,4,2),
         layout_matrix = rbind(c(1,2,3),
@@ -257,34 +262,9 @@ grid.arrange(grobs=list(
                               c(7,8,9),
                               c(10,11,12)))
         
-Rt_consistency(result_list[[1]]%>%filter(period==1),"rt_est","fit")[2,]
-Rt_consistency(result_list[[1]]%>%filter(period==2),"rt_est","fit")[2,]
+##
+#####
 
+## end of script
 
-
-
-mat_tmp <- matrix(NA,8,8)
-for (i in 1:4){
-        mat_tmp[2*(i-1)+1:2,1:4] <- 
-                Rt_consistency(result_list[[i]]%>%
-                                       filter(period==2),
-                                       "rt_est","fit")
-        mat_tmp[2*(i-1)+1:2,5:8] <- 
-                Rt_consistency(result_list[[i]]%>%
-                                      filter(period==2&count>30),
-                               "rt_est","fit")
-}
-
-
-
-
-
-####
-dates_check <- seq(as.Date("2020-10-19"),as.Date("2020-11-14"),1)
-dates_check <- as.Date("2020-07-01")+60:110
-boxplot_func(result_list[[4]]%>%filter(date>as.Date("2020-10-19")),T)
-
-Rt_consistency(result_list[[4]]%>%filter(date%in%dates_check),"rt_est","fit")
-
-
-
+#####

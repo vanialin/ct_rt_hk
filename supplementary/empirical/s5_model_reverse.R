@@ -1,7 +1,7 @@
 #------------
 # reverse validation
-# Fig. S8
-# By Yang.B 
+# Fig. S7
+# By Yang.B and Lin.Y
 # August 2021
 #------------
 #
@@ -11,6 +11,7 @@ library(tidyverse)
 library(pROC)
 library(gridExtra)
 require(e1071)
+require(ggpubr)
 #
 ######################################################
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
@@ -25,6 +26,7 @@ predPlot = function(ct, period, panel){
         
         y.max = 6
         
+        
         if(period == 'training') {
                 data_used = ct %>%
                         filter(training == 1)
@@ -37,49 +39,64 @@ predPlot = function(ct, period, panel){
                 dates = range(data_used$date)
         }
         
+        data_rt = data_used %>% # to truncate incidence-based Rt
+                filter(date <= dates[2]-7)
+        
         p = ggplot(data = data_used %>%
                            mutate(upr = ifelse(upr > y.max, y.max, upr))) +
                 
+                #epi curve
+                geom_bar(aes(x = date,
+                             y = all.cases),
+                         stat = 'identity',
+                         fill = '#dad5d4') +
+                
                 geom_polygon(data = tibble(
-                        date_new = c(data_used$date, 
-                                     rev(data_used$date)),
-                        y_new = c(data_used$local.rt.lower,
-                                  rev(data_used$local.rt.upper))) %>%
+                        date_new = c(data_rt$date, 
+                                     rev(data_rt$date)),
+                        y_new = c(data_rt$local.rt.lower,
+                                  rev(data_rt$local.rt.upper))) %>%
                                 mutate(y_new = ifelse(y_new > y.max, y.max, y_new)),
                         aes(x = date_new,
-                            y = y_new,
+                            y = y_new*25,
                             fill = 'empirical'),
                         color = NA,
                         alpha = 0.2) +
                 
-                geom_line(aes(x = date,
-                              y = local.rt.mean,
+                geom_line(data = data_rt,
+                          aes(x = date,
+                              y = local.rt.mean*25,
                               color = 'empirical'),
                           size = 1) +
                 
                 geom_point(aes(x = date,
-                               y = fit,
+                               y = fit*25,
                                color = 'predicted'),
                            size = 2) +
                 
                 geom_segment(aes(x = date,
-                                 y = lwr,
+                                 y = lwr*25,
                                  xend = date,
-                                 yend = upr,
+                                 yend = upr*25,
                                  color = 'predicted'),
                              size = 0.8) +
                 
-                scale_y_continuous(name = 'Rt',
-                                   limits = c(0, y.max),
+                scale_y_continuous(name = 'Cases',
+                                   limits = c(0, 150),
                                    expand = c(0, 0),
-                                   breaks = seq(0, y.max, 1)) +
+                                   breaks = seq(0, 150, 30),
+                                   position = 'right',
+                                   sec.axis = sec_axis(~./25, 
+                                                       name = 'Rt')) +
+                
                 scale_x_date(name = 'Date',
-                             limits = dates,
+                             limits = c(dates[1]-1,dates[2]+1),
                              date_breaks = "1 week", 
                              date_labels = "%d/%m",
                              expand = c(0.01, 0.01))  +
                 
-                geom_hline(yintercept = 1,
+                
+                geom_hline(yintercept = 1*25,
                            linetype = 'dashed',
                            size = 1,
                            color = 'grey') +
@@ -94,12 +111,12 @@ predPlot = function(ct, period, panel){
                         scale_fill_manual(name = NULL,
                                           values = c(empirical = 'black',
                                                      predicted = '#9292e4'),
-                                          labels = c('Incidence-based', 'Ct-based, training'), 
+                                          labels = c('Incidence-based', 'Ct-based'), 
                                           guide = "none") +
                         scale_color_manual(name = NULL,
                                            values = c(empirical = 'black',
                                                       predicted = '#9292e4'),
-                                           labels = c('Incidence-based', 'Ct-based, training'))
+                                           labels = c('Incidence-based', 'Ct-based'))
                 
         }
         
@@ -131,9 +148,9 @@ predBoxPlot = function(ct, panel){
                         pred_rt_cat = factor(cut(fit,
                                                  c(-1, 0.5, 1, 1.5, 10))),
                         group = factor(ifelse(training == 1,
-                                              'Training, wave 4',
+                                              'Training/testing, wave 4',
                                               'Testing, wave 3'),
-                                       levels = c('Training, wave 4',
+                                       levels = c('Training/testing, wave 4',
                                                   'Testing, wave 3'))
                 )
         
@@ -165,8 +182,8 @@ date_max <- as.Date("2021-03-31")
 daily.linelist$date <- as.Date(daily.linelist$date)
 
 ct.rt2 = daily.linelist %>%
-        mutate(training = ifelse(date >= as.Date('2020-11-20') &
-                                         date <= as.Date('2020-12-31'),
+        mutate(training = ifelse(date >= as.Date('2020-11-20') & 
+                                         date <= as.Date('2021-01-31'),
                                  1,
                                  0),
                testing = ifelse(date >= as.Date('2020-07-01') &
@@ -177,26 +194,34 @@ ct.rt2 = daily.linelist %>%
         filter(date >= as.Date('2020-07-01') &
                        date <= date_max)
 
+## training in the earlier phase of wave 4
 m = lm(log(local.rt.mean) ~ mean + skewness.imputed, 
-       data = ct.rt2[ct.rt2$training == 1, ])
+       data = ct.rt2[ct.rt2$date %in% (as.Date("2020-11-20")+0:29), ])
 
 pred = predict(m, newdata = ct.rt2, interval = 'prediction')
 
 ct.rt2 = cbind(ct.rt2, exp(pred))
 
+## added
+p_extra <- predPlot(ct.rt2, 'training', 'a') + 
+        geom_bracket(xmin = min(ct.rt2$date[ct.rt2$training==1]), 
+                     xmax = min(ct.rt2$date[ct.rt2$training==1])+29, 
+                     y.position = 5.7*25,
+                     label = "Alternative training period",
+                     tip.length = 0.01,size=.5)
 
 p = grid.arrange(
         grobs = list(
-                predPlot(ct.rt2, 'training', 'a'),
-                predBoxPlot(ct.rt2, 'c'),
-                predPlot(ct.rt2, 'testing', 'b')),
+                p_extra,
+                predPlot(ct.rt2, 'testing', 'b'),
+                predBoxPlot(ct.rt2, 'c')),
         widths = c(2, 1),
         heights = c(1, 1),
-        layout_matrix = rbind(c(1, 2),
-                              c(3, 3))
+        layout_matrix = rbind(c(1, 1),
+                              c(2, 3))
 )
 ## export results 
-ggsave('Fig_S8.pdf',p,width = 12, height = 8)
+ggsave('Fig_S7.pdf',p,width = 12, height = 8)
 ##
 #####
 

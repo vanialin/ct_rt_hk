@@ -32,12 +32,8 @@ library(EnvStats)
 
 path <- "/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/simulations"
 setwd(path)
-path_source <- paste0(path,"/sources/")
-path_simulate <- paste0(path,"/linelists/")
-path_complete <- paste0(path_simulate,"complete_linelist/")
-path_observe <- paste0(path_simulate,"observe_linelist/")
-path_rt <- paste0(path_simulate,"output_rt/")
-
+path_linelist <- paste0(path,"/linelists/")
+path_rt <- paste0(path_linelist,"output_rt/")
 path_plot <- paste0(path,"/plots/")
 
 
@@ -82,7 +78,7 @@ plot(seir_dynamics$seir_outputs$Rt,type="l",col="red",axes=F,ylim=c(0,4))
 abline(h=1,lty=2,col="red")
 abline(h=3,lty=2,col="red")
 
-save(seir_dynamics,file=paste0(path_simulate,"/SEIR_dynamics1.Rda"))
+save(seir_dynamics,file=paste0(path_linelist,"SEIR_dynamics.Rda"))
 
 ### simulate the whole population ----
 ## if is_infect = 1, assign onset, incubation period and confirmation delay
@@ -91,7 +87,7 @@ complete_linelist <- simulate_infected_cases(seir_dynamics$incidence,
                                              times=times,population_n=population_n)
 
 symp_linelist <- complete_linelist %>% filter(is_infected==1&is_symp==1)
-write_csv(x=symp_linelist,path=paste0(path_complete,"complete_linelist1.csv"))
+write_csv(x=symp_linelist,path=paste0(path_linelist,"complete_linelist.csv"))
 
 #
 #
@@ -105,7 +101,7 @@ vl_list <- get_indiv_trajectory(symp_linelist)
 #Sys.time()-a
 vl_full <- vl_list[[2]]
 summary(vl_full$ct_value);hist(vl_full$ct_value[vl_full$ct_value<40])
-write_csv(x=vl_full,path=paste0(path_observe,"vl_ob1_linelist_full.csv"))
+write_csv(x=vl_full,path=paste0(path_linelist,"vl_ob_linelist_full.csv"))
 
 #
 #
@@ -128,7 +124,7 @@ for (i in 1:2){
                                    symptomatic=T)$sampled_individual %>% 
                 arrange(infection_time)
         #case_flat_limited[[i]] <- case_flat_limited_tmp
-        #write_csv(x=case_flat_limited_tmp,path=paste0(path_observe,"vl_obs1_scenario",i,".csv"))
+        #write_csv(x=case_flat_limited_tmp,path=paste0(path_linelist,"vl_obs_scenario",i,".csv"))
 }
 
 ### scenario 3 - increasing detection (per the case of definition changes)
@@ -147,7 +143,7 @@ case_varying <-
                            solve_times=times, 
                            symptomatic=T)$sampled_individual %>% arrange(infection_time)
 
-#write_csv(x=case_varying,path=paste0(path_observe,"vl_obs1_scenario3.csv"))
+#write_csv(x=case_varying,path=paste0(path_linelist,"vl_obs_scenario3.csv"))
 
 ### scenario 4 - under detection at second wave
 a <- logistic_func(101:120,start_prob=0.5,end_prob=0.05,growth_rate=0.25,
@@ -165,7 +161,7 @@ case_ud <-  simulate_reporting(vl_full,timevarying_prob = prob_ud,
                                solve_times=times, 
                                symptomatic=T)$sampled_individual %>% 
         arrange(infection_time)
-#write_csv(x=case_ud,path=paste0(path_observe,"vl_obs1_scenario4.csv"))
+#write_csv(x=case_ud,path=paste0(path_linelist,"vl_obs_scenario4.csv"))
 ##        
 #####
 

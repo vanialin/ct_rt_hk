@@ -1,7 +1,7 @@
 #------------
 # sensitivity analysis
 # on age of sampled cases
-# Fig. S6
+# Fig. S5
 # By Lin.Y and Yang.B
 # updated October 2021
 #------------

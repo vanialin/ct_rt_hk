@@ -1,6 +1,6 @@
 #-----------
 # selection on training period
-# Fig. S9
+# Fig. S8
 # By Lin.Y
 # updated October 2021
 #-----------
@@ -44,48 +44,13 @@ for (i in 1:2){ # for wave 3 and wave 4
 #
 #
 
-## try to using former to predict latter in wave 4
-r.sqr.training <- r.sqr.mat[,5:8]
-which(r.sqr.training==max(r.sqr.training),arr.ind = T)
-
-date.tmp <- seq(as.Date(startdate[2])+12,as.Date(startdate[2])+12+20-1,1)
-test.tmp <- daily.linelist[daily.linelist$date%in%as.character(date.tmp),]
-lm.test <- lm(log(local.rt.mean)~mean+skewness.imputed,data=test.tmp)
-summary(lm.test)
-
-# compare with main training model
-train.period <- seq(as.Date("2020-07-06"),as.Date("2020-08-31"),1)
-train.tmp <- daily.linelist[daily.linelist$date%in%as.character(train.period),]
-lm.train <- lm(log(local.rt.mean)~mean+skewness.imputed,data=train.tmp)
-#
-#
-## test with following 51 days (covering the January peak)
-pred.tmp <- daily.linelist[daily.linelist$date%in%as.character(max(date.tmp)+1:51),]
-# main model
-pred.tmp[,c("fit1","lwr1","upr1")] <- 
-        exp(predict(lm.train,pred.tmp,interval = "prediction"))
-# alternative model built in earlier wave 4
-pred.tmp[,c("fit2","lwr2","upr2")] <- 
-        exp(predict(lm.test,pred.tmp,interval = "prediction"))
-# directional consistency similar
-sum(((pred.tmp$local.rt.mean-1)*(pred.tmp$fit1-1))>=0)/nrow(pred.tmp) # 75%
-sum(((pred.tmp$local.rt.mean-1)*(pred.tmp$fit2-1))>=0)/nrow(pred.tmp) # 78%
-
-pred.tmp$date <- as.Date(pred.tmp$date)
-test.tmp$date <- as.Date(test.tmp$date)
-plot.tmp <- bind_rows(test.tmp,pred.tmp) %>% 
-        mutate(period=1+1*(date>as.Date(max(test.tmp$date))))
-
-#
-#
-
 ## plot out
-pdf("Fig_S9.pdf",height = 10,width = 10)
-par(mar=c(4,4,2,3)+0.1)
-fig.list <- list(c(0,0.35,0.65,1),
-                 c(0,0.35,0.35,0.7),
-                 c(0.3,1,0.65,1),
-                 c(0.3,1,0.35,0.7))
+pdf("Fig_S8.pdf",height = 7.5,width = 10)
+par(mar=c(4.5,4,2,3)+0.1)
+fig.list <- list(c(0,0.35,0.45,1),
+                 c(0,0.35,0,0.55),
+                 c(0.3,1,0.45,1),
+                 c(0.3,1,0,0.55))
 col.plot <- c("#493267","#9e379f","#e86af0","#7bb3ff")
 leg.here <- c("a","b","c","d")
 #
@@ -142,7 +107,7 @@ for (i in 1:2){
              labels = rep(NA,length(0:(nrow(df.tmp)-1))))
         date.vec <- as.character(df.tmp$date[1])
         for (d in 1:nrow(df.tmp)){
-                if (d%%7==0){
+                if (d%%10==0){
                         date.vec <- c(date.vec,as.character(df.tmp$date[d]))
                 }
         }
@@ -184,67 +149,28 @@ for (i in 1:2){
                 polygon(c(53,53,55,55),c(140,134,134,140),
                         col=alpha("orange",.3),border = "white")
                 text(55.5,137,"Tested samples",adj=0)
+                lines(c(53,55),rep(128.5,2),lwd=2)
+                text(55.5,128.5,"Incidence-based Rt",adj=0)
         }
         #
-        axis(2,at=0:5*30,las=1)
-        mtext("Numbers",side=2,line=2.5)
+        axis(4,at=0:5*30,las=1)
+        mtext("Number of cases",side=4,line=1.8)
+        #### add Rt
+        par(new=T)
+        plot(NA,xlim=c(0,(nrow(df.tmp)-1)),ylim=c(0,5),xlab=NA,ylab=NA,
+             axes = F,main=NA)
+        polygon(c(0:(nrow(df.tmp)-1),rev(0:(nrow(df.tmp)-1))),
+                c(df.tmp$local.rt.lower,rev(df.tmp$local.rt.upper)),
+                col=alpha("grey",.5),border = F)
+        lines(0:(nrow(df.tmp)-1),df.tmp$local.rt.mean,lwd=2)
+        lines(c(0,(nrow(df.tmp)-1)),rep(1,2),lty=2)
+        axis(2,las=1)
+        mtext("Rt",side=2,line=1.8)
+        ##
         mtext(leg.here[i+2],side=3,adj=0,line=0,font=2,cex=1.3)
 }
 #
 #
-## ADDED ##
-par(mar=c(3,4,2,4)+0.1)
-par(fig=c(0,1,0,0.38),new=T)
-plot(NA,xlim=c(1,nrow(plot.tmp)),ylim=c(0,150),las=1,axes=F,xlab=NA,ylab=NA)
-axis(4,at=0:5*30,las=1,line=.5)
-mtext("Number of cases",side=4,line=2.4)
-vec <- c(0:7*10+1)
-axis(1,at=vec,labels = rep(NA,5),tck=-0.02)
-for (j in 1:length(vec)){
-        mtext(paste0(day(as.Date(plot.tmp$date[vec[j]])),"/",
-                     month(as.Date(plot.tmp$date[vec[j]]))),
-              side=1,at=vec[j],line=.5) 
-}
-mtext("Date",side=1,line=1.2)
-# plotting elements
-for (i in 1:nrow(plot.tmp)){
-        polygon(c(rep(i-0.5,2),rep(i+0.5,2)),
-                c(0,rep(plot.tmp$records[i],2),0),col=alpha("grey",.5),border = "white")
-}
-par(new=T)
-plot(NA,xlim=c(1,nrow(plot.tmp)),ylim=c(0,4),axes=F,xlab=NA,ylab=NA)
-brackets(1,3.8,21,3.8,type = 4,xpd=T,h=.3)
-mtext("Alternative training period",side=3,at=10,line=0,font=2,cex=.9)
-axis(2,at=0:4,las=1,line=.5)
-mtext("Rt",side=2,line=2.2)
-abline(h=1,lty=2,col="grey",lwd=1.5)
-polygon(c(1:nrow(plot.tmp),rev(1:nrow(plot.tmp))),
-        c(plot.tmp$local.rt.lower,rev(plot.tmp$local.rt.upper)),
-        col = alpha("grey",.5),border=F)
-lines(1:nrow(plot.tmp),plot.tmp$local.rt.mean,lwd=2)
-#
-#
-polygon(c(1:nrow(plot.tmp),rev(1:nrow(plot.tmp))),
-        c(plot.tmp$lwr1,rev(plot.tmp$upr1)),
-        col = alpha("pink",.3),border=F)
-lines(1:nrow(plot.tmp),plot.tmp$fit1,lwd=2,col="pink")
-for (i in 1:nrow(plot.tmp)){
-        lines(rep(i,2),c(plot.tmp$lwr2[i],plot.tmp$upr2[i]),
-              col="#7bb3ff",lwd=1.5)
-        points(i,plot.tmp$fit2[i],col="#7bb3ff",pch=19,cex=.5)
-}
-mtext("e",side=3,font=2,adj=0,line=.5,cex=1.3)
-#
-# legends
-col.vec <- c(1,"pink","#7bb3ff")
-text.vec <- c("Incidence-based Rt",
-              "Ct-based Rt, using main model",
-              "Ct-based Rt, using alternative model")
-for (i in 1:3){
-        lines(c(35,38),rep(4.2-0.35*i,2),col=col.vec[i])
-        text(38.5,4.2-0.35*i,text.vec[i],adj=0)
-}
-
 dev.off()
 ##
 #####

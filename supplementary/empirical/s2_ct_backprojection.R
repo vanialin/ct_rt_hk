@@ -1,7 +1,7 @@
 #------------
 # back-projecting Ct
 # on illness onset
-# Fig. S3-5
+# Fig. S2-4
 # By Lin.Y and Yang.B
 # updated October 2021
 #------------
@@ -33,7 +33,6 @@ df <- data.frame(est=coef(lm1))
 s <- confint(lm1)
 df$lwr <- s[,1]
 df$upr <- s[,2]
-exp(df[2,]) # the decline rate was reasonable at around 1 unit per day
 
 coef.df <- data.frame(key.factor=row.names(df),value=as.numeric(df$est))
 coef.df$ct.onset <- coef.df$age.gp <- coef.df$key <- NA
@@ -57,8 +56,7 @@ coef.out <- coef.out[,c("key","age.gp","ct.onset","lwr","upr","ci")]
 ct.linelist2 <- merge(ct.linelist,coef.out[,c("key","ct.onset","lwr","upr")],
                       by.x = "key",all.x = T,by.y = "key")
 
-### provide temporal Ct trend for each age group (Fig. S3) ----
-## to rationalize the extrapolation model visually
+### provide temporal Ct trend for each age group (Fig. S2) ----
 lm.gen <- lm(log(ct.value)~test.to.onset*age.gp,data=ct.symp)
 summary(lm.gen) 
 cbind(exp(coef(lm.gen)),exp(confint(lm.gen)))
@@ -91,8 +89,8 @@ for (i in 1:3){
 #
 #
 
-### demonstrate difference in temporal trend of Ct at sampling and at onset ---
-### for training period, more quantitatively ----
+### demonstrate difference in temporal trend of Ct at sampling and at onset ###
+## for more clear visual comparison
 ct.linelist2$date.onset.num <- as.numeric(as.Date(ct.linelist2$date.onset))
 ct.linelist2$date.test.num <- as.numeric(as.Date(ct.linelist2$date.test))
 count.training <- daily.linelist[month(daily.linelist$date)%in%7:8,]
@@ -116,11 +114,11 @@ ct.df.onset <- ct.tmp[ct.tmp$date.onset.num%in%date.seq.num&
                                   !is.na(ct.tmp$date.onset.num),]
 
 ## compare regression coefficient against time 
-lm.onset <- lm(date.onset.num~ct.onset,data=ct.df.onset)
-lm.actual <- lm(date.test.num~ct.value,data=ct.df.actual)
-round(c(coef(lm.onset)[2],confint(lm.onset)[2,],summary(lm.onset)$coefficients[2,4]),3)
+#lm.onset <- lm(date.onset.num~ct.onset,data=ct.df.onset)
+#lm.actual <- lm(date.test.num~ct.value,data=ct.df.actual)
+#round(c(coef(lm.onset)[2],confint(lm.onset)[2,],summary(lm.onset)$coefficients[2,4]),3)
 # p=0.43, insignificant trend for Ct at onset
-round(c(coef(lm.actual)[2],confint(lm.actual)[2,],summary(lm.actual)$coefficients[2,4]),3)
+#round(c(coef(lm.actual)[2],confint(lm.actual)[2,],summary(lm.actual)$coefficients[2,4]),3)
 # p<0.001, significant trend for Ct at sampling
 
 ## prepare median for both distribution
@@ -130,11 +128,12 @@ b <- boxplot(ct.onset~date.onset.num,data=ct.df.onset)
 median.onset <- b$stats[3,]
 
 ###
-### Fig. S4 ----
-par(fig=c(0,0.5,0,1),mar=c(4,3,2,3)+0.1)
+### Fig. S3 ----
+par(fig=c(0,0.67,0,1),mar=c(4,3,2,3)+0.1)
 plot(NA,xlim=range(date.seq.num),ylim=c(0,150),xlab=NA,
      ylab=NA,axes=F)
-axis(4,las=1)
+axis(4,las=1,at=0:5*30)
+mtext("Number of cases",side=4,line=2)
 for (j in 1:nrow(count.tmp)){
         polygon(c(rep(count.tmp$date.num[j]-0.5,2),
                   rep(count.tmp$date.num[j]+0.5,2)),
@@ -148,7 +147,7 @@ for (j in 1:nrow(count.tmp)){
                 border="white")
 }
 par(new=T)
-plot(NA,xlim=range(date.seq.num),ylim=rev(c(15,30)),las=1,xlab=NA,
+plot(NA,xlim=range(date.seq.num),ylim=rev(c(18,28)),las=1,xlab=NA,
      ylab=NA,axes=F)
 axis(2,las=1)
 mtext("Ct value",side=2,line=2)
@@ -168,6 +167,8 @@ p1 <- predict(gam.actual,
 est <- p1$fit
 upr <- p1$fit + (2 * p1$se.fit) 
 lwr <- p1$fit - (2 * p1$se.fit) 
+lines(range(date.seq.num),rep(mean(ct.df.actual$ct.value),2),
+      col=alpha("orange",.7),lwd=2,lty=2)
 polygon(c(date.seq.num,rev(date.seq.num)),
         c(lwr,rev(upr)),col=alpha("orange",.3),border=F)
 lines(date.seq.num,est,col="orange",lwd=2)
@@ -179,23 +180,28 @@ p2 <- predict(gam.onset,
 est2 <- p2$fit
 upr2 <- p2$fit + (2 * p2$se.fit) 
 lwr2 <- p2$fit - (2 * p2$se.fit) 
+lines(range(date.seq.num),rep(mean(ct.df.onset$ct.onset),2),
+      col=alpha("blue",.7),lwd=2,lty=2)
 polygon(c(date.seq.num,rev(date.seq.num)),
         c(lwr2,rev(upr2)),col=alpha("blue",.3),border=F)
-lines(date.seq.num,est2,col="blue",lwd=1.5,lty=2)
+lines(date.seq.num,est2,col="blue",lwd=2)
 ## legend
-polygon(c(rep(18477,2),rep(18478,2)),c(14.8,15,15,14.8),col="grey",border = F)
-polygon(c(rep(18477,2),rep(18478,2)),c(15.3,15.5,15.5,15.3),col="light blue",border = F)
-text(18478.5,14.9,"Case by sampling",adj=0)
-text(18478.5,15.4,"Case by onset",adj=0)
-lines(c(18477,18478),rep(16,2),col="orange",lwd=1.5)
-lines(c(18477,18479),rep(16.5,2),col="blue",lwd=1.5,lty=2)
-text(18478.5,16,"GAM Ct by sampling",adj=0)
-text(18478.5,16.5,"GAM Ct by onset",adj=0)
-
+polygon(c(rep(18477,2),rep(18478,2)),c(17.8,18,18,17.8),col="grey",border = F)
+polygon(c(rep(18477,2),rep(18478,2)),c(18.1,18.3,18.3,18.1),col="light blue",border = F)
+text(18478.5,17.9,"Case by sampling",adj=0)
+text(18478.5,18.2,"Case by onset",adj=0)
+lines(c(18477,18478),rep(18.5,2),col="orange",lwd=1.5)
+lines(c(18477,18478),rep(18.8,2),col="blue",lwd=1.5)
+text(18478.5,18.5,"GAM Ct by sampling",adj=0)
+text(18478.5,18.8,"GAM Ct by onset",adj=0)
+lines(c(18477,18478),rep(19.1,2),col="orange",lwd=1.5,lty=2)
+lines(c(18477,18478),rep(19.4,2),col="blue",lwd=1.5,lty=2)
+text(18478.5,19.1,"Mean value of Ct by sampling",adj=0)
+text(18478.5,19.4,"Mean value of Ct by onset",adj=0)
 mtext("a",side=3,font=2,adj=0,cex=1.5)
 #
 #
-par(fig=c(0.5,1,0.45,1),new=T,mar=c(4,4,2,2)+0.1)
+par(fig=c(0.67,1,0.45,1),new=T,mar=c(4,4,2,2)+0.1)
 plot(NA,xlim=range(date.seq.num),ylim=rev(c(10,40)),
      xlab=NA,ylab=NA,axes = F,main=NA)
 axis(2,las=1)
@@ -222,7 +228,7 @@ lines(date.seq.num,est,col="orange",lwd=2)
 mtext("b",side=3,font=2,adj=0,cex=1.5)
 #
 #
-par(fig=c(0.5,1,0,0.55),new=T)
+par(fig=c(0.67,1,0,0.55),new=T)
 plot(NA,xlim=range(date.seq.num),ylim=rev(c(10,40)),
      xlab=NA,ylab=NA,axes = F,main=NA)
 axis(2,las=1)
@@ -246,7 +252,7 @@ for (ii in 1:length(median.onset)){
 }
 polygon(c(date.seq.num,rev(date.seq.num)),
         c(lwr2,rev(upr2)),col=alpha("blue",.3),border=F)
-lines(date.seq.num,est2,col="blue",lwd=1.5,lty=2)
+lines(date.seq.num,est2,col="blue",lwd=1.5)
 mtext("c",side=3,font=2,adj=0,cex=1.5)
 # 7*12
 
@@ -311,8 +317,8 @@ summary(skew.actual);IQR(skew.actual)
 summary(skew.onset);IQR(skew.onset)
 #
 #
-### Fig. S5 ----
-pdf("Fig_S5.pdf",height = 10,width = 9)
+### Fig. S4 ----
+pdf("Fig_S4.pdf",height = 10,width = 9)
 par(mar=c(4,3,2,2)+0.1)
 x.vec <- c(rep(0.4,4),rep(0.7,3),rep(1,3))
 y.vec <- c(c(1,0.77,0.54,0.31),rep(c(1,0.77,0.54),2))

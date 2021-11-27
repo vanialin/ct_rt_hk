@@ -3,7 +3,7 @@
 # first Ct and testing delays
 # Fig S1
 # BY Lin Y.
-# updated October 2021
+# October 2021
 #------------
 #
 # load packages
@@ -246,6 +246,7 @@ for (i in 1:2){
                 col=alpha("orange",.3),border=F) 
         lines(df.tmp$test.to.start+start.vec[i],df.tmp$ct.gam,col="orange",lwd=1.5)
 }
+mtext("a",side=3,adj=0,font=2,cex=1.5)
 
 ##
 
@@ -253,8 +254,8 @@ for (i in 1:2){
 
 par(fig=c(0,1,0,0.55),new=T)
 plot(NA,xlim=c(1,x.total),ylim=c(0,15),xlab=NA,ylab=NA,axes = F,main=NA)
-axis(2,at=0:3*5,las=1,line=-.5)
-mtext("Delay",side=2,line=1.5)
+axis(2,at=0:5*3,las=1,line=-.5)
+mtext("Delay between onset and sampling",side=2,line=1.5)
 # x-axis
 day.axis <- c(0:(x.length[1]-1),gap.wave4:(x.length[2]+gap.wave4-1))
 axis(1,at=day.axis,
@@ -272,8 +273,9 @@ for (i in 1:2){
         } 
 }
 # add longer axis
-mtext("2020",at = 66, side=1,line=2.5,font=2)
-mtext("2021",at = 175, side=1,line=2.5,font=2)
+mtext("2020",at = 66, side=1,line=2,font=2)
+mtext("2021",at = 175, side=1,line=2,font=2)
+mtext("Date of sampling",side=1,line=2.8)
 # Ct boxplots 
 for (i in 1:2){
         mbs.tmp <- mbs.list[[i]]
@@ -297,6 +299,7 @@ for (i in 1:2){
                 col=alpha(1,.3),border=F) 
         lines(df.tmp$test.to.start+start.vec[i],df.tmp$delay.gam,lwd=1.5)
 }
+mtext("b",side=3,adj=0,font=2,cex=1.5)
 
 ###
 #####

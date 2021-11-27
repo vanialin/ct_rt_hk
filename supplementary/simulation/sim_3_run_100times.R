@@ -7,8 +7,8 @@
 
 #### components ready ####
 ### data
-vl_full <- read.csv(paste0(path_observe,"vl_ob1_linelist_full.csv"))
-load(file=paste0(path_simulate,"SEIR_dynamics1.Rda"))
+vl_full <- read.csv(paste0(path_observe,"vl_ob_linelist_full.csv"))
+load(file=paste0(path_simulate,"SEIR_dynamics.Rda"))
 #
 ### functions
 # 1) to sample equal number of cases per day as in main
@@ -122,7 +122,7 @@ for (i in 1:4){
         }
 }
 
-write.csv(out,"table_s6.csv",row.names = F)
+write.csv(out,paste0(path_plot,"table_s6.csv"),row.names = F)
 
 ##
 #####

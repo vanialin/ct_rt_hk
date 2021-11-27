@@ -2,7 +2,7 @@
 # log-linear
 # Rt and Ct
 # also include reverse validation
-# Fig. S2
+# Tables
 # By Lin Y. and Yang B.
 # updated October 2021
 #------------
