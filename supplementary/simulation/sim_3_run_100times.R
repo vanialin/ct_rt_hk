@@ -122,7 +122,7 @@ for (i in 1:4){
         }
 }
 
-write.csv(out,paste0(path_plot,"table_s6.csv"),row.names = F)
+write.csv(out[,c(1,3,5)],paste0(path_plot,"table_s6.csv"),row.names = F)
 
 ##
 #####
