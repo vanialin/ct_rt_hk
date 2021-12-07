@@ -84,7 +84,7 @@ predPlot = function(ct, period, panel){
                                  xend = date,
                                  yend = upr*25,
                                  color = 'predicted'),
-                             size = 0.8) +
+                             size = 0.8) + 
                 
                 scale_y_continuous(name = 'Cases',
                                    limits = c(0, 150),
@@ -253,6 +253,12 @@ retroExamplePlot = function(df, date, panel){
                              size = .7,
                              alpha = 0.8) +
                 
+                ### arrow indicating current day for prediction
+                geom_segment(aes(x = max(data_ct$date), y = 113, 
+                                 xend = max(data_ct$date), yend = 100),
+                             arrow = arrow(length = unit(0.25, "cm")),
+                             size = .8) +
+                
                 scale_y_continuous(name = 'Cases',
                                    limits = c(0, 120),
                                    expand = c(0, 0),
@@ -271,6 +277,8 @@ retroExamplePlot = function(df, date, panel){
                       plot.title.position = 'plot',
                       plot.title = element_text(size = 16, face = 'bold')) +
                 labs(title = panel) +
+                annotate("text", x = max(data_ct$date)-6.5, y = 117, 
+                         label = "Date of estimation", size=4) +
                 scale_fill_manual(name = NULL,
                                   values = c(empirical = 'black',
                                              predicted = '#e49292'),
@@ -329,7 +337,7 @@ p = grid.arrange(
                               c(4,6,6))
 )
 ## export results
-#ggsave("Fig_2_update_v2.pdf",p,width = 22, height = 12)
+#ggsave("Fig_2_3dec.pdf",p,width = 22, height = 12)
 #
 ######
 
