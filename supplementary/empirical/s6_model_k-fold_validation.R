@@ -8,8 +8,10 @@
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
 ##                 daily Ct mean, median and skewness (imputed)
 ######################################################
+#
+#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
 # read in "data_daily_all.csv"
-#daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_daily_all.csv",as.is=T)
+daily.linelist <- read.csv("data/data_daily_all.csv",as.is=T)
 #
 # data on days for cross-validation
 data1 <- daily.linelist[as.Date(daily.linelist$date)>=
@@ -25,7 +27,7 @@ for (i in 1:10){
         validate.set <- split1[[i]]
         # trained on days not covered in that validation round
         train.set <- data1[!data1$date%in%(split1[[i]]$date),]
-        # main model --
+        # use main model for fitting
         lm.tmp <- lm(log(local.rt.mean)~mean+skewness.imputed,data=train.set)
         validate.set$fit <- exp(predict(lm.tmp,validate.set))
         # calculate MAE

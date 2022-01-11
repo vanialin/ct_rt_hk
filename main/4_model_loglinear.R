@@ -10,8 +10,10 @@
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
 ##                 daily Ct mean, median and skewness (imputed)
 ######################################################
+#
+#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
 # read in "data_daily_all.csv"
-daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/data/data_daily_all.csv",as.is=T)
+daily.linelist <- read.csv("data/data_daily_all.csv",as.is=T)
 #
 ######
 # correlation
@@ -45,8 +47,9 @@ cor.mat[cor.mat==0] <- "<0.001"
 cor.mat
 ## export results
 # cor.mat - Supplementary Table 1
-#write.csv(cor.mat,"table_s1.csv",row.names=F)
+#write.csv(cor.mat,"results/table_s1.csv",row.names=F)
 #--------------
+
 #####
 # regression
 #####
@@ -83,7 +86,7 @@ for (i in 1:5){
 aic.mat <- round(aic.mat,2)
 ## export results
 # aic.mat - Supplementary Table 4
-#write.csv(aic.mat,"table_s4.csv",row.names=F)
+#write.csv(aic.mat,"results/table_s4.csv",row.names=F)
 #--------------
 #####
 # get estimate
@@ -117,7 +120,7 @@ for (i in 1:2){
 cor.rt;consistency*100
 #
 #
-# 3. under various case counts
+# 3. under various daily record counts
 summary(daily.est$records)
 daily.est$case.cut <- 1+1*(daily.est$records>15)+1*(daily.est$records>30)+1*(daily.est$records>60)
 with(daily.est,table(period,case.cut,useNA = 'always'))
@@ -144,12 +147,12 @@ for (j in 1:3){
 }
 ## export as table
 cor.rt2[cor.rt2==0] <- "<0.01"
-#write.csv(cor.rt2,"table_s4.csv",row.names=F)
+#write.csv(cor.rt2,"results/table_s4.csv",row.names=F)
 #
 ##
 ## export estimated daily Ct-based Rt
 # daily.est - daily estimated Ct-based Rt
-#write.csv(daily.est,"daily_ct_rt.csv",row.names = F)
+#write.csv(daily.est,"results/daily_ct_rt.csv",row.names = F)
 ##
 #--------------
 #####
@@ -186,7 +189,7 @@ coef.out[is.na(coef.out)] <- ""
 coef.out[coef.out==0] <- "<0.001"
 ## export results
 # coef.out - Supplementary Table 2
-#write.csv(coef.out,"table_s2.csv",row.names = F)
+#write.csv(coef.out,"results/table_s2.csv",row.names = F)
 ##
 #####
 

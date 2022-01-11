@@ -5,6 +5,12 @@
 # BY Lin Y.
 # October 2021
 #------------
+######################################################
+## data_ct: all individual Ct values (with test dates)
+## daily_ct_bootstrap: daily case counts/sample counts, incidence-based Rt; 
+##                     daily Ct mean, median and skewness (imputed)
+##                     CIs calculated for GAM Ct and skewness (from "2_ct_for_bootstrap")
+######################################################
 #
 # load packages
 require(plotrix)
@@ -12,15 +18,10 @@ require(lubridate)
 require(dplyr)
 require(scales)
 #
-######################################################
-## data_ct: all individual Ct values (with test dates)
-## daily_ct_bootstrap: daily case counts/sample counts, incidence-based Rt; 
-##                     daily Ct mean, median and skewness (imputed)
-##                     CIs calculated for GAM Ct and skewness (from "2_ct_for_bootstrap")
-######################################################
+#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
 # read in "data_ct.csv" and "data_cases.csv"
-ct.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/data/data_ct.csv")
-daily.ct <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/result/daily_ct_bootstrap.csv")
+ct.linelist <- read.csv("data/data_ct.csv")
+daily.ct <- read.csv("results/daily_ct_bootstrap.csv")
 #
 
 # plotting elements
@@ -67,7 +68,7 @@ start.vec <- c(0,71)
 ### prepare the median for both delay and Ct
 median.ct.list <- median.delay.list <- mbs.list <- list()
 for (i in 1:2){
-        df.used <- # sort by date.test
+        df.used <- # sort by **date.test**
                 ct.linelist[as.numeric(as.Date(ct.linelist$date.test)-
                                                  as.Date(start.date[i]))>=0 & 
                                       as.numeric(as.Date(ct.linelist$date.test)-
@@ -208,7 +209,8 @@ for (i in 1:2){
 #
 
 ### plot (8*12)
-#par(mar=c(4,3,2,0)+0.1)
+par(mar=c(4,3,2,0)+0.1)
+pdf("results/Fig_S1.pdf",height = 8, width = 12)
 par(fig=c(0,1,0.45,1))
 plot(NA,xlim=c(1,x.total),ylim=rev(c(10,40)),xlab=NA,ylab=NA,axes = F,main=NA)
 axis(2,at=2:8*5,las=1,line=-.5)
@@ -235,8 +237,7 @@ for (i in 1:2){
         #median
         median.stat <- median.ct.list[[i]]
         for (ii in 1:length(median.stat)){
-                points(ord[ii],
-                       median.stat[ii],col="#ff4d00",pch=19,cex=.35)
+                points(ord[ii],median.stat[ii],col="#ff4d00",pch=19,cex=.35)
         }
         # GAM Ct
         df.tmp <- wave.list.update[[i]]
@@ -300,7 +301,7 @@ for (i in 1:2){
         lines(df.tmp$test.to.start+start.vec[i],df.tmp$delay.gam,lwd=1.5)
 }
 mtext("b",side=3,adj=0,font=2,cex=1.5)
-
+dev.off()
 ###
 #####
 

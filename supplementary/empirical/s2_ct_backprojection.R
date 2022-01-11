@@ -5,6 +5,10 @@
 # By Lin.Y and Yang.B
 # updated October 2021
 #------------
+######################################################
+## data_ct: all individual Ct values (with test dates)
+## data_cases: daily case counts/sample counts and incidence-based Rt
+######################################################
 #
 # load packages
 require(scales)
@@ -12,13 +16,10 @@ require(mgcv)
 require(readxl)
 require(dplyr)
 #
-######################################################
-## data_ct: all individual Ct values (with test dates)
-## data_cases: daily case counts/sample counts and incidence-based Rt
-######################################################
+#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
 # read in "data_ct.csv" and "data_cases.csv"
-#ct.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/data/data_ct.csv")
-#daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/data/data_cases.csv")
+ct.linelist <- read.csv("data/data_ct.csv")
+daily.linelist <- read.csv("data/data_cases.csv")
 #
 
 ### extrapolate Ct value at onset ----
@@ -51,25 +52,24 @@ coef.out$upr <- pred.value[,3]
 coef.out$ci <- coef.out$upr-coef.out$lwr
 
 coef.out <- coef.out[,c("key","age.gp","ct.onset","lwr","upr","ci")]
-#write.csv(coef.out,"ct_onset_singleobs_20sep.csv",row.names = F)
+#write.csv(coef.out,"results/ct_onset_singleobs.csv",row.names = F)
 
 ct.linelist2 <- merge(ct.linelist,coef.out[,c("key","ct.onset","lwr","upr")],
                       by.x = "key",all.x = T,by.y = "key")
 
 ### provide temporal Ct trend for each age group (Fig. S2) ----
 lm.gen <- lm(log(ct.value)~test.to.onset*age.gp,data=ct.symp)
-summary(lm.gen) 
 cbind(exp(coef(lm.gen)),exp(confint(lm.gen)))
 col.point <- c("dark grey","#5bc0de","#d9534f")
 col.line <- c("black","#0057e7","red")
 text.add <- c("0-18 yo","19-64 yo","65+ yo")
-plot(NA,xlim=c(0,20),ylim=rev(c(7,40)),las=1,xlab="Days since onset",
-     ylab="Ct value",axes=F) # 6*8
+### plot
+pdf("results/Fig_S2.pdf",height = 6, width = 8)
+plot(NA,xlim=c(0,20),ylim=rev(c(7,40)),las=1,xlab="Days since onset",ylab="Ct value",axes=F)
 axis(1,at=0:4*5)
 axis(2,at=2:8*5,las=1)
 for (i in 1:3){
         df.tmp <- ct.linelist2[ct.linelist2$age.gp==i,] 
-        # perhaps can change into boxplot
         points(df.tmp$test.to.onset-0.2+0.2*(i-1),df.tmp$ct.value,
                pch=19,col=alpha(col.point[i],.2))
 }
@@ -85,11 +85,11 @@ for (i in 1:3){
         points(12.5,7+1.5*i,col=alpha(col.point[i],.6),pch=19)
         text(15.5,7+1.5*i,text.add[i],adj=0)
 }
-
+dev.off()
 #
 #
 
-### demonstrate difference in temporal trend of Ct at sampling and at onset ###
+### demonstration of differences in temporal trend of Ct at sampling and at onset ###
 ## for more clear visual comparison
 ct.linelist2$date.onset.num <- as.numeric(as.Date(ct.linelist2$date.onset))
 ct.linelist2$date.test.num <- as.numeric(as.Date(ct.linelist2$date.test))
@@ -107,6 +107,7 @@ count.tmp <- ct.linelist2 %>% group_by(date.test.num) %>%
         right_join(ct.linelist2 %>% group_by(date.onset.num) %>% 
                            summarise(symp.records=n()) %>% ungroup()) %>%
         rename(date.num=date.onset.num) %>% 
+        # comparison only made for time period with sufficient record counts
         filter(date.num%in%date.seq.num) 
 
 ct.df.actual <- ct.tmp
@@ -129,21 +130,21 @@ median.onset <- b$stats[3,]
 
 ###
 ### Fig. S3 ----
+pdf("results/Fig_S3.pdf",height = 7, width = 12)
 par(fig=c(0,0.67,0,1),mar=c(4,3,2,3)+0.1)
-plot(NA,xlim=range(date.seq.num),ylim=c(0,150),xlab=NA,
-     ylab=NA,axes=F)
+plot(NA,xlim=range(date.seq.num),ylim=c(0,150),xlab=NA,ylab=NA,axes=F)
 axis(4,las=1,at=0:5*30)
 mtext("Number of cases",side=4,line=2)
 for (j in 1:nrow(count.tmp)){
         polygon(c(rep(count.tmp$date.num[j]-0.5,2),
                   rep(count.tmp$date.num[j]+0.5,2)),
                 c(0,rep(count.tmp$all.records[j],2),0),
-                col="#838584", # all record
+                col="#838584", # all records **BY SAMPLING**
                 border="white")
         polygon(c(rep(count.tmp$date.num[j]-0.5,2),
                   rep(count.tmp$date.num[j]+0.5,2)),
                 c(0,rep(count.tmp$symp.records[j],2),0),
-                col=alpha("light blue",.75), # symp record
+                col=alpha("light blue",.75), # symp record **BY ONSET**
                 border="white")
 }
 par(new=T)
@@ -160,28 +161,27 @@ axis(1,at=date.pos,
      labels = paste0(day(date.label),"/",month(date.label)))
 mtext("Date",side=1,line=2)
 #
+## actual
 gam.actual <- gam(ct.value~s(date.test.num),data=ct.df.actual)
-p1 <- predict(gam.actual, 
-              data.frame(date.test.num=date.seq.num), 
+p1 <- predict(gam.actual, data.frame(date.test.num=date.seq.num), 
               type = "link", se.fit = TRUE)
 est <- p1$fit
 upr <- p1$fit + (2 * p1$se.fit) 
 lwr <- p1$fit - (2 * p1$se.fit) 
 lines(range(date.seq.num),rep(mean(ct.df.actual$ct.value),2),
-      col=alpha("orange",.7),lwd=2,lty=2)
+      col=alpha("orange",.7),lwd=2,lty=2) # reference for comparison
 polygon(c(date.seq.num,rev(date.seq.num)),
         c(lwr,rev(upr)),col=alpha("orange",.3),border=F)
 lines(date.seq.num,est,col="orange",lwd=2)
-# at onset
+## estimated at onset
 gam.onset <- gam(ct.onset~s(date.onset.num),data=ct.df.onset)
-p2 <- predict(gam.onset, 
-              data.frame(date.onset.num=date.seq.num), 
+p2 <- predict(gam.onset, data.frame(date.onset.num=date.seq.num), 
               type = "link", se.fit = TRUE)
 est2 <- p2$fit
 upr2 <- p2$fit + (2 * p2$se.fit) 
 lwr2 <- p2$fit - (2 * p2$se.fit) 
 lines(range(date.seq.num),rep(mean(ct.df.onset$ct.onset),2),
-      col=alpha("blue",.7),lwd=2,lty=2)
+      col=alpha("blue",.7),lwd=2,lty=2) # reference for comparison
 polygon(c(date.seq.num,rev(date.seq.num)),
         c(lwr2,rev(upr2)),col=alpha("blue",.3),border=F)
 lines(date.seq.num,est2,col="blue",lwd=2)
@@ -202,8 +202,7 @@ mtext("a",side=3,font=2,adj=0,cex=1.5)
 #
 #
 par(fig=c(0.67,1,0.45,1),new=T,mar=c(4,4,2,2)+0.1)
-plot(NA,xlim=range(date.seq.num),ylim=rev(c(10,40)),
-     xlab=NA,ylab=NA,axes = F,main=NA)
+plot(NA,xlim=range(date.seq.num),ylim=rev(c(10,40)),xlab=NA,ylab=NA,axes = F,main=NA)
 axis(2,las=1)
 mtext("Ct value",side=2,line=2)
 date.pos <- c(date.seq.num[1],date.seq.num[(1:floor(length(date.seq.num)/10))*10],
@@ -219,8 +218,7 @@ boxplot(ct.df.actual$ct.value~ct.df.actual$date.test.num,
         boxwex=.2,boxcol="dark grey",whisklty = 1,staplecol="white",
         whiskcol=alpha("grey",.45),whisklwd=1.65)
 for (ii in 1:length(median.actual)){
-        points(ord[ii],
-               median.actual[ii],col="orange",pch=19,cex=.45)
+        points(ord[ii],median.actual[ii],col="orange",pch=19,cex=.45)
 }
 polygon(c(date.seq.num,rev(date.seq.num)),
         c(lwr,rev(upr)),col=alpha("orange",.3),border=F)
@@ -229,8 +227,7 @@ mtext("b",side=3,font=2,adj=0,cex=1.5)
 #
 #
 par(fig=c(0.67,1,0,0.55),new=T)
-plot(NA,xlim=range(date.seq.num),ylim=rev(c(10,40)),
-     xlab=NA,ylab=NA,axes = F,main=NA)
+plot(NA,xlim=range(date.seq.num),ylim=rev(c(10,40)),xlab=NA,ylab=NA,axes = F,main=NA)
 axis(2,las=1)
 mtext("Ct value",side=2,line=2)
 date.pos <- c(date.seq.num[1],date.seq.num[(1:floor(length(date.seq.num)/10))*10],
@@ -247,14 +244,13 @@ boxplot(ct.df.onset$ct.onset~ct.df.onset$date.onset.num,
         boxwex=.2,boxcol="light blue",whisklty = 1,staplecol="white",
         whiskcol=alpha("light blue",.45),whisklwd=1.65)
 for (ii in 1:length(median.onset)){
-        points(ord2[ii],
-               median.onset[ii],col="blue",pch=19,cex=.35)
+        points(ord2[ii],median.onset[ii],col="blue",pch=19,cex=.35)
 }
 polygon(c(date.seq.num,rev(date.seq.num)),
         c(lwr2,rev(upr2)),col=alpha("blue",.3),border=F)
 lines(date.seq.num,est2,col="blue",lwd=1.5)
 mtext("c",side=3,font=2,adj=0,cex=1.5)
-# 7*12
+dev.off()
 
 #
 #
@@ -286,7 +282,7 @@ for (i in 1:2){
                 actual.used <- 
                         ct.tmp[as.character(ct.tmp$date.test)%in%
                                        as.character(date.seq),]
-                onset.used <-  #categorized on DATE.ONSET 
+                onset.used <-  # by **DATE.ONSET** 
                         ct.tmp[as.character(ct.tmp$date.onset)%in%
                                        as.character(date.seq)&
                                        !is.na(ct.tmp$date.onset),]
@@ -305,7 +301,7 @@ for (i in 1:2){
                 data.tmp <- daily.linelist[as.Date(daily.linelist$date)%in%date.seq,]
                 diff.vec <- diff(data.tmp$local.rt.mean)
                 if (sum(diff.vec<0)>=(nrow(data.tmp)/2)&
-                    min(data.tmp$local.rt.mean)<=1){ # half days' declining
+                    min(data.tmp$local.rt.mean)<=1){ # declining
                         avg.rt[4*(i-1)+n] <- 1 # low epidemic
                 } else {
                         avg.rt[4*(i-1)+n] <- 0 # high epidemic
@@ -318,7 +314,7 @@ summary(skew.onset);IQR(skew.onset)
 #
 #
 ### Fig. S4 ----
-pdf("Fig_S4.pdf",height = 10,width = 9)
+pdf("results/Fig_S4.pdf",height = 10,width = 9)
 par(mar=c(4,3,2,2)+0.1)
 x.vec <- c(rep(0.4,4),rep(0.7,3),rep(1,3))
 y.vec <- c(c(1,0.77,0.54,0.31),rep(c(1,0.77,0.54),2))
@@ -393,7 +389,7 @@ polygon(c(rep(0,2),rep(1,2)),c(7.8,8,8,7.8),col=alpha(col.option2[2],.55), # all
         border="white")
 text(1.3,7.9,"Ct at onset",adj=0)
 ###
-# increasing
+# decreasing
 text(0,6.5,"Decreasing epidemic",adj=0)
 polygon(c(rep(0,2),rep(1,2)),c(5.5,5.7,5.7,5.5),col=col.option[1], # all record by sampling
         border="white")

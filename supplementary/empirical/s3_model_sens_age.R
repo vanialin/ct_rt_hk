@@ -6,17 +6,19 @@
 # updated October 2021
 #------------
 #
-# load packages
-require(e1071)
-#
 ######################################################
 ## data_ct: all individual Ct values (with test dates)
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
 ##                 daily Ct mean, median and skewness (imputed)
 ######################################################
+#
+# load packages
+require(e1071)
+#
+#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
 # read in "data_ct.csv" and "data_daily_all.csv"
-#ct.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_ct.csv")
-#daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_daily_all.csv",as.is=T)
+ct.linelist <- read.csv("data/data_ct.csv")
+daily.linelist <- read.csv("data/data_daily_all.csv",as.is=T)
 #
 
 data1 <- daily.linelist
@@ -79,7 +81,7 @@ x.month.pos <- c(0,(which(as.character(date.seq)%in%month.end)-1)) # for axis ti
 x.month.lab <- c("Nov","Dec","Jan","Feb","Mar")
 #
 ## start plotting
-pdf("Fig_S6.pdf",height=7,width = 12)
+pdf("results/Fig_S6.pdf",height=7,width = 12)
 fig.list <- list(c(0,0.25,0.6,1),
                  c(0.5,0.75,0.6,1),
                  c(0.25,0.5,0.6,1),
@@ -121,7 +123,7 @@ for (i in 1:2){
                 axis(2,at=3:7*5,las=1,line=0)
         }
         mtext(paste0("Wave ",i+2),side=3,font=2)
-        # adult
+        # skewness
         par(fig=fig.list[[2*i]],new=T)
         boxplot(df.tmp$skewness~df.tmp$rt.cat,ylim=c(-1,1.5),axes=F,
                 whisklty = 1,outpch=16,outcex=.7,staplecol="white",
@@ -161,10 +163,8 @@ axis(1,at=x.month.pos,labels = rep(NA,length(x.month.pos)),tck=-.025)
 for (k in 1:length(x.month)){
         mtext(x.month.lab[k],side=1,line=2.5,at=x.month[k],adj=0)
 } 
-polygon(c(test.new$test.to.start,
-          rev(test.new$test.to.start)),
-        c(test.new$rt.lb,rev(test.new$rt.ub)),
-        col=alpha("pink",.3),border=F) 
+polygon(c(test.new$test.to.start,rev(test.new$test.to.start)),
+        c(test.new$rt.lb,rev(test.new$rt.ub)),col=alpha("pink",.3),border=F) 
 # adjusted for age
 for(i in 1:nrow(test.new)){
         lines(rep(test.new$test.to.start[i],2),c(test.new$upr[i],test.new$lwr[i]),
@@ -179,7 +179,7 @@ points(41.5,4.5,col="light blue",pch=16)
 text(43.5,5,"Ct predicted Rt",adj=0)
 text(43.5,4.5,"Ct predicted Rt, adjusted for daily mean age",adj=0)
 mtext("c",side=3,adj=0,font=2,cex=1.3,line=.5)
-##
+#
 dev.off()
 ##
 #####

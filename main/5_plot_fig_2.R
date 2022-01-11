@@ -4,6 +4,11 @@
 # By Yang B. and Lin Y. 
 # updated October 2021
 #------------
+######################################################
+## daily_ct_rt: daily case counts/sample counts, incidence-based Rt; 
+#               Ct-based Rt estimated from main model (with prediction interval)
+##              from "4_model_loglinear"
+######################################################
 #
 # load packages
 require(ggplot2)
@@ -12,18 +17,16 @@ library(pROC)
 library(gridExtra)
 require(e1071)
 #
-######################################################
-## daily_ct_rt: daily case counts/sample counts, incidence-based Rt; 
-#               Ct-based Rt estimated from main model (with prediction interval)
-##              from "4_model_loglinear"
-######################################################
+#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
 # read in "daily_ct_rt.csv"
-ct.rt <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_08_R0/publish/result/daily_ct_rt.csv",as.is = T)
+ct.rt <- read.csv("results/daily_ct_rt.csv",as.is = T)
 ## variable explanations (for Ct-based Rt in the data)
 # fit - point estimates 
 # upr - upper range for prediction interval 
 # lwr - lower range for prediction interval
 #
+
+source("ggplot_default.R")
 # functions set for plotting 
 predPlot = function(ct, period, panel){
         
@@ -151,7 +154,6 @@ predBoxPlot = function(ct, panel){
                 mutate(
                         pred_rt_cat = factor(cut(fit,
                                                  c(-1, 0.5, 1, 1.5, 10))),
-                        ### need to edit here to plot ED Fig 5
                         group = factor(ifelse(training == 1,
                                               'Training, wave 3',
                                               'Testing, wave 4'),
@@ -336,9 +338,8 @@ p = grid.arrange(
                               c(3,6,6),
                               c(4,6,6))
 )
-## export results
-#ggsave("Fig_2_3dec.pdf",p,width = 22, height = 12)
-#
+ggsave("results/Fig_2.pdf",p,width = 22, height = 12)
+##
 ######
 
 ## end of script

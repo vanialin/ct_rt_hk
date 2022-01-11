@@ -10,12 +10,16 @@
 ##                     CIs calculated for GAM Ct and skewness (from "2_ct_for_bootstrap")
 ##                     correspond to "Figure 1" data in source data file
 ######################################################
+#
 # load packages
 require(plotrix)
 require(lubridate)
+require(scales)
+require(pBrackets)
 #
+#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
 # read in "daily_ct_bootstrap.csv"
-daily.ct <- read.csv("daily_ct_bootstrap.csv")
+daily.ct <- read.csv("results/daily_ct_bootstrap.csv")
 #
 #
 start.date <- c("2020-07-01","2020-11-01")
@@ -59,7 +63,7 @@ start.vec <- c(0,71)
 #
 #--------
 ## start plotting
-pdf("Fig_1.pdf",width = 15,height = 8)
+pdf("results/Fig_1.pdf",width = 15,height = 8)
 ## panel A: epi curve
 par(mar=c(4.5,3,3,3)+0.1)
 par(fig=c(0,0.7,0.6,1))
@@ -80,7 +84,7 @@ for (i in 1:2){
         axis(1,at=x.month.pos[[i]],
              labels = rep(NA,length(x.month.pos[[i]])),tck=-.06)
 }
-# case count by reporting date
+# case count **by reporting date**
 for (i in 1:2){
         df.tmp <- daily.ct[daily.ct$period==i,]
         for (j in 1:nrow(df.tmp)){
@@ -139,7 +143,7 @@ for (i in 1:2){
         axis(1,at=x.month.pos[[i]],
              labels = rep(NA,length(x.month.pos[[i]])),tck=-.06)
 }
-# record count by sampling date
+# record count **by sampling date**
 for (i in 1:2){
         df.tmp <- daily.ct[daily.ct$period==i,]
         for (j in 1:nrow(df.tmp)){

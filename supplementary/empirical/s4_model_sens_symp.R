@@ -6,26 +6,30 @@
 # October 2021
 #------------
 #
-# load packages
-require(e1071)
-require(mgcv)
-require(lubridate)
-#
 ######################################################
 ## data_ct: all individual Ct values (with test dates)
 ## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
 ##                 daily Ct mean, median and skewness (imputed)
 ######################################################
-## 1) symptomatic 
-#ct.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_ct.csv")
-#daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_daily_all.csv",as.is=T)
+#
+# load packages
+require(e1071)
+require(mgcv)
+require(lubridate)
+#
+#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
+# read in "data_ct.csv" and "data_daily_all.csv"
+ct.linelist <- read.csv("data/data_ct.csv")
+daily.linelist <- read.csv("data/data_daily_all.csv",as.is=T)
 #
 data1 <- daily.linelist
-# add mean age (daily) and calculate daily Ct for adult samples only
+# add mean Ct and skewness for samples from symptomatic cases
+# calculate proportion of symptomatic records (daily)
 data1$mean.symp <- data1$skewness.symp <- data1$symp.record <- NA
 for (i in 1:nrow(daily.linelist)){
-        ct.daily <- ct.linelist[ct.linelist$date.test==data1$date[i]&
-                                        ct.linelist$asymptomatic==0,]
+        ct.daily <- # by **date of testing**
+                ct.linelist[ct.linelist$date.test==data1$date[i]&
+                                    ct.linelist$asymptomatic==0,]
         if (nrow(ct.daily)!=0){
                 data1$mean.symp[i] <- mean(ct.daily$ct.value)
                 data1$skewness.symp[i] <- 
@@ -84,8 +88,8 @@ x.month.lab <- c("Nov","Dec","Jan","Feb","Mar")
 #
 #
 #### plot out
+pdf("results/Fig_S6.pdf",height = 9,width = 11)
 # panel a
-#pdf("Fig_S6.pdf",height = 9,width = 11)
 par(fig=c(0,1,0.67,1),mar=c(2,3,2,1)+0.1)
 plot(NA,xlim=c(1,x.length),ylim=c(0,150),axes=F,xlab=NA)
 # x-axis
@@ -213,10 +217,8 @@ axis(2,at=0:5,las=1,line=-.4)
 mtext("Rt",side=2,line=1.8)
 mtext("Date",side=1,line=2.1)
 lines(c(1,x.length),rep(1,2),lty=2)
-polygon(c(test.new$test.to.start,
-          rev(test.new$test.to.start)),
-        c(test.new$rt.lb,rev(test.new$rt.ub)),
-        col=alpha("pink",.3),border=F) 
+polygon(c(test.new$test.to.start,rev(test.new$test.to.start)),
+        c(test.new$rt.lb,rev(test.new$rt.ub)),col=alpha("pink",.3),border=F) 
 # symptomatic Rt-est
 for(i in 1:nrow(test.new)){
         lines(rep(test.new$test.to.start[i],2),c(test.new$upr[i],test.new$lwr[i]),
@@ -231,6 +233,7 @@ points(41.5,4.3,col="#00b8ff",pch=16)
 text(43.5,4.8,"Ct predicted Rt, using all records",adj=0)
 text(43.5,4.3,"Ct predicted Rt, using only symptomatic records",adj=0)
 mtext("d",side=3,adj=0,font=2,cex=1.3,line=.5)
+#
 dev.off()
 ##
 #####

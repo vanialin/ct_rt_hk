@@ -8,10 +8,11 @@
 ## data_ct: all individual Ct values (with test dates)
 ## data_cases: daily case counts/sample counts and incidence-based Rt
 ######################################################
+#
+#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
 # read in "data_ct.csv" and "data_cases.csv"
-#setwd()
-ct.linelist <- read.csv("data_ct.csv",as.is=T)
-daily.linelist <- read.csv("data_cases.csv")
+ct.linelist <- read.csv("data/data_ct.csv",as.is=T)
+daily.linelist <- read.csv("data/data_cases.csv")
 #
 # calculate Ct parameters (mean, median, skewness)
 ct <- ct.linelist %>% 
@@ -49,12 +50,13 @@ ct1 = ct %>%
 ct1$skewness.imputed[!is.na(ct1$skewness)] <- ct1$skewness[!is.na(ct1$skewness)]
 #
 # merge
+daily.linelist$date <- as.Date(daily.linelist$date)
 daily.out <- merge(daily.linelist,ct1,by.x = "date",all.x = T,by.y = "date.test")
-daily.out$date.num <- as.numeric(daily.out$date)
+daily.out$date.num <- as.numeric(daily.out$date) # to fill in NAs
 ## export
 # daily.out - all daily information required for regression 
 # i.e., daily incidence-based Rt, daily Ct measured by mean/median and skewness (imputed)
-#write.csv(daily.out,"DIRECTORY/data_daily_all.csv",row.names = F)
+#write.csv(daily.out,"data/data_daily_all.csv",row.names = F)
 # correspond to "Supplementary" data in source data file
 ##
 #####

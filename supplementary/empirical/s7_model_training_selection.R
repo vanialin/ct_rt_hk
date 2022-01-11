@@ -4,6 +4,10 @@
 # By Lin.Y
 # updated October 2021
 #-----------
+######################################################
+## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
+##                 daily Ct mean, median and skewness (imputed)
+######################################################
 #
 # load packages
 require(lubridate)
@@ -11,13 +15,9 @@ require(plotrix)
 require(dplyr)
 require(pBrackets)
 #
-######################################################
-## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
-##                 daily Ct mean, median and skewness (imputed)
-######################################################
-#
+#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
 # read in "data_daily_all.csv"
-#daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_daily_all.csv",as.is=T)
+daily.linelist <- read.csv("data/data_daily_all.csv",as.is=T)
 #
 # set up time period for selection training periods
 startdate <- c("2020-07-04","2020-11-10")
@@ -45,7 +45,7 @@ for (i in 1:2){ # for wave 3 and wave 4
 #
 
 ## plot out
-pdf("Fig_S8.pdf",height = 7.5,width = 10)
+pdf("results/Fig_S8.pdf",height = 7.5,width = 10)
 par(mar=c(4.5,4,2,3)+0.1)
 fig.list <- list(c(0,0.35,0.45,1),
                  c(0,0.35,0,0.55),
@@ -128,7 +128,7 @@ for (i in 1:2){
                 polygon(c(rep(start.background-1,2),
                           rep(start.background+days.select[nn]-1,2)),
                         c(0,153-3*nn,153-3*nn,0),col=alpha(col.plot[nn],.15),border=F)
-                                #
+                #
         }
         # case count and record count
         for (j in 1:nrow(df.tmp)){
@@ -169,7 +169,6 @@ for (i in 1:2){
         ##
         mtext(leg.here[i+2],side=3,adj=0,line=0,font=2,cex=1.3)
 }
-#
 #
 dev.off()
 ##

@@ -10,13 +10,15 @@
 ##                 daily Ct mean, median and skewness (imputed)
 ##                 correspond to "Supplementary" data in source data file
 ######################################################
+#
 # load packages
 require(e1071) # to calculate skewness
 require(mgcv)
 #
+#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
 # read in "data_ct.csv" and "data_daily_all.csv"
-ct.linelist <- read.csv("data_ct.csv")
-daily.linelist <- read.csv("data_daily_all.csv",as.is=T)
+ct.linelist <- read.csv("data/data_ct.csv")
+daily.linelist <- read.csv("data/data_daily_all.csv",as.is=T)
 #
 # function for bootstrap sampling
 bootsample <- function (m,n,original.data){ 
@@ -162,8 +164,8 @@ wave.all$period <- ifelse(as.Date(wave.all$date)>=start.date[1]&
 #
 ## export results
 # wave.all - with CIs calculated for GAM Ct and skewness
-#write.csv(wave.all,"daily_ct_bootstrap.csv",row.names=F)
-# corresponded to "Figure 1" data in source data file
+#write.csv(wave.all,"results/daily_ct_bootstrap.csv",row.names=F)
+# correspond to "Figure 1" data in source data file
 ##
 #####
 

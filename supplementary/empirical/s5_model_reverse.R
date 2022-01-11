@@ -2,8 +2,12 @@
 # reverse validation
 # Fig. S7
 # By Yang.B and Lin.Y
-# August 2021
+# November 2021
 #------------
+######################################################
+## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
+##                 daily Ct mean, median and skewness (imputed)
+#######################################################
 #
 # load packages
 require(ggplot2)
@@ -13,13 +17,9 @@ library(gridExtra)
 require(e1071)
 require(ggpubr)
 #
-######################################################
-## data_daily_all: daily case counts/sample counts, incidence-based Rt; 
-##                 daily Ct mean, median and skewness (imputed)
-#######################################################
-#
+#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
 # read in "data_daily_all.csv"
-#daily.linelist <- read.csv("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/publish/data/data_daily_all.csv",as.is=T)
+daily.linelist <- read.csv("data/data_daily_all.csv",as.is=T)
 #
 # functions set for plotting 
 predPlot = function(ct, period, panel){
@@ -220,8 +220,7 @@ p = grid.arrange(
         layout_matrix = rbind(c(1, 1),
                               c(2, 3))
 )
-## export results 
-ggsave('Fig_S7.pdf',p,width = 12, height = 8)
+ggsave('results/Fig_S7.pdf',p,width = 12, height = 8)
 ##
 #####
 
