@@ -4,47 +4,9 @@
 # November 2021
 #------------
 
-## load packages
-require(devtools)
-#devtools::install_github("jameshay218/lazymcmc")
-#devtools::install_github("jameshay218/virosolver")
-
-library(lazymcmc)
-library(virosolver)
-library(odin)
-library(dde)
-library(ggplot2)
-library(EpiNow2)
-library(dplyr)
-library(tidyr)
-library(reshape2)
-library(reprex)
-library(tidyverse)
-library(patchwork)
-library(extraDistr)
-library(ggthemes)
-library(data.table)
-library(mgcv)
-library(e1071)
-library(extraDistr)
-library(MASS)
-library(EnvStats)
-
-path <- "/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/simulations"
+path <- "/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/2022_01_R2/"
 setwd(path)
-path_linelist <- paste0(path,"/linelists/")
-path_rt <- paste0(path_linelist,"output_rt/")
-path_plot <- paste0(path,"/plots/")
-
-
-
-###
-source(paste0(path,"/sim_funcs_odin.R"))
-source(paste0(path,"/sim_funcs_others.R"))
-source(paste0(path,"/sim_funcs_all.R"))
-
-#
-#
+source(paste0(path,"sim_source_general.R"))
 
 #########
 #########
@@ -53,18 +15,7 @@ source(paste0(path,"/sim_funcs_all.R"))
 # simulate the whole population 
 # assign onset, incubation periods and reporting delay
 
-#### read in par
-model_pars <- read.csv(paste0(path,"/partab_seir_switch_model_hk.csv"))
-pars <- model_pars$values
-names(pars) <- model_pars$names
-
-## Simulated population and time period
-population_n <- 7500000
-times <- 0:200
-## Extend to account for delays
-times_extended <-c(times,max(times):(max(times)+50)) 
-
-### simulate linelist for infection (incidence) ----
+### simulate incidence ----
 set.seed(1) 
 seir_dynamics <- simulate_seir_wrapper(population_n=population_n,solve_times=times,
                                        pars=pars, switch_model = T,beta_smooth = 0.8)
@@ -77,16 +28,17 @@ plot(seir_dynamics$seir_outputs$Rt,type="l",col="red",axes=F,ylim=c(0,4))
 abline(h=1,lty=2,col="red")
 abline(h=3,lty=2,col="red")
 
-save(seir_dynamics,file=paste0(path_linelist,"SEIR_dynamics.Rda"))
+#save(seir_dynamics,file=paste0(path_linelist,"SEIR_dynamics.Rda"))
 
 ### simulate the whole population ----
 ## if is_infect = 1, assign onset, incubation period and confirmation delay
 set.seed(1)
 complete_linelist <- simulate_infected_cases(seir_dynamics$incidence,
                                              times=times,population_n=population_n)
+write_csv(x=complete_linelist,path=paste0(path_linelist,"complete_linelist.csv"))
 
 symp_linelist <- complete_linelist %>% filter(is_infected==1&is_symp==1)
-write_csv(x=symp_linelist,path=paste0(path_linelist,"complete_linelist.csv"))
+#write_csv(x=symp_linelist,path=paste0(path_linelist,"symp_linelist.csv"))
 
 #
 #
@@ -97,7 +49,19 @@ write_csv(x=symp_linelist,path=paste0(path_linelist,"complete_linelist.csv"))
 #a <- Sys.time()
 set.seed(1)
 vl_list <- get_indiv_trajectory(symp_linelist)
+save(vl_list,file=paste0(path_linelist,"vl_all_linelist.Rda")) ## this can be large
 #Sys.time()-a
+vl_traj <- vl_list[[1]] 
+### randomly check the simulated trajectories
+vl_for_check <- vl_traj %>% filter(i %in% sample(unique(i),200,F))
+plot(NA,xlim=c(0,40),ylim=rev(c(10,40)),las=1)
+id_check <- unique(vl_for_check$i)
+for (n in 1:200){
+        lines(vl_for_check$infect_to_test[vl_for_check$i==id_check[n]],
+              vl_for_check$ct_value[vl_for_check$i==id_check[n]],col=alpha("grey",.7))
+} # checked
+
+### output sampled Ct
 vl_full <- vl_list[[2]]
 summary(vl_full$ct_value);hist(vl_full$ct_value[vl_full$ct_value<40])
 write_csv(x=vl_full,path=paste0(path_linelist,"vl_ob_linelist_full.csv"))
@@ -114,14 +78,13 @@ write_csv(x=vl_full,path=paste0(path_linelist,"vl_ob_linelist_full.csv"))
 #### scenarios
 set.seed(1)  #### apply for ALL scenarios below ****
 ### scenario 1&2 - flat detection at 25% and 10%
-#case_flat_limited <- NULL
+case_flat_limited <- NULL
 for (i in 1:2){
         case_flat_limited_tmp <- 
                 simulate_reporting(vl_full,
                                    frac_report = 0.25-0.15*(i==2), 
-                                   solve_times=times, 
-                                   symptomatic=T) %>% arrange(infection_time)
-        #case_flat_limited[[i]] <- case_flat_limited_tmp
+                                   solve_times=times) %>% arrange(infection_time)
+        case_flat_limited[[i]] <- case_flat_limited_tmp
         #write_csv(x=case_flat_limited_tmp,path=paste0(path_linelist,"vl_obs_scenario",i,".csv"))
 }
 
@@ -138,8 +101,7 @@ prob_varying <-
 case_varying <- 
         simulate_reporting(vl_full,
                            timevarying_prob = prob_varying, 
-                           solve_times=times, 
-                           symptomatic=T) %>% arrange(infection_time)
+                           solve_times=times) %>% arrange(infection_time)
 
 #write_csv(x=case_varying,path=paste0(path_linelist,"vl_obs_scenario3.csv"))
 
@@ -153,14 +115,13 @@ detect_prob1 <- c(a,rep(a[length(a)],7),rev(a))
 prob_ud <- tibble(t=times_extended,
                   prob=c(rep(0.25,100),detect_prob1,
                          rep(0.25,length(times_extended)-100-length(detect_prob1))),
-                  ver=paste0("ud",i))
+                  ver="ud")
 #
 case_ud <-  simulate_reporting(vl_full,timevarying_prob = prob_ud, 
-                               solve_times=times, 
-                               symptomatic=T) %>% 
+                               solve_times=times) %>% 
         arrange(infection_time)
 #write_csv(x=case_ud,path=paste0(path_linelist,"vl_obs_scenario4.csv"))
-##        
+##
 #####
 
 ## end of script

@@ -2,14 +2,10 @@
 ## all sourced functions
 #####
 
-library(purrr)
-library(EnvStats)
-
 ###
 #' 1. simulate observed cases 
 #'adapted from Hay
 #'updated distribution of incubation period and reporting delay
-
 simulate_infected_cases <- function(
         incidence, times, symp_frac=0.6,
         population_n,
@@ -21,7 +17,8 @@ simulate_infected_cases <- function(
         ## Create a tibble with infection times and incidence
         inc_dat <- tibble(infection_time=c(NA,times),inc=c(not_infected,incidence))
         ## Duplicates rows in inc_dat according to inc
-        inc_dat <- inc_dat %>% uncount(inc)
+        inc_dat <- inc_dat %>% uncount(as.integer(as.character(inc)))
+        
         
         inc_dat <- inc_dat %>%
                 mutate(i=1:n()) %>%
@@ -39,17 +36,17 @@ simulate_infected_cases <- function(
                 ## Confirmation time from a gamma distribution (fitted using HK data)
                 mutate(confirmation_delay=floor(rgamma(n(), 
                                                        shape = conf_delay_par1, 
-                                                       rate = conf_delay_par2)))
+                                                       rate = conf_delay_par2))) %>%
+                dplyr::select(-inc)
         inc_dat
 }
 
 ###
 #' 2. simulate viral trajectory for each infected case
 #'adapted from Quilty
-#'following assigned incubation period and reporting delay from already simulated values
-
+#'following assigned incubation period and reporting delay from values that were already assigned to ppl
 approx_sd <- function(x1, x2){
-        (x2-x1) / (qnorm(0.95) - qnorm(0.05) )
+        (x2-x1) / (qnorm(0.95) - qnorm(0.05))
 }
 
 get_indiv_trajectory <- function(df){
@@ -57,15 +54,15 @@ get_indiv_trajectory <- function(df){
         set.seed(1)
         traj <- df %>% 
                 mutate(u = runif(n(),0,1)) %>%
-                # duration from Cevik et al. 2020 Lancet Microbe
                 mutate(start=0,
-                       end=qnormTrunc(p = u, mean=17, sd=approx_sd(15.5,18.6), min = 0),
-                       # we peak -3 ~ 0 d before illness onset (from Jones 2021 Science; He 2020 Nat Med)
-                       # +runif(n(),-3,0)
-                       onset_t=incu_period) %>% 
+                       onset_t=incu_period,
+                       # update it to align with onset_t instead **
+                       end=onset_t + 
+                               # duration from Cevik et al. 2020 Lancet Microbe
+                               qnormTrunc(p = u, mean=17, sd=approx_sd(15.5,18.6), min = 0)) %>% 
                 pivot_longer(cols = c(start,end,onset_t),
                              values_to = "x") %>% 
-                # peak CT taken from Kissler et al. 2021 PLOS Biology
+                # peak Ct taken from Kissler et al. 2021 PLOS Biology
                 # also consistent with Jones 2021 Science
                 # which is also quite consistently with the observed highest value in HK data
                 mutate(y=case_when(name=="start"   ~ 40,
@@ -134,13 +131,17 @@ get_inc_Rt <- function(ct_list0,n1,n2){
 #' 4.1. merging Ct and Rt dataframe (for result function)
 #' daily mean value and skewness
 merge_Ct_Rt <- function(rt0,ct0){
-        ct1 <- ct0 %>% filter(ct_value < 40) %>% 
-                group_by(sampled_time) %>% 
-                summarise(count=n(),
-                          mean=mean(ct_value),
-                          skewness=skewness(ct_value)) %>%
-                ungroup() %>%
-                right_join(ct0%>%group_by(infection_time) %>% 
+        ct1 <- ct0 %>% group_by(sampled_time) %>% 
+                # daily case count (by detection)
+                summarise(count=n()) %>% ungroup() %>%
+                right_join(ct0 %>% filter(ct_value < 40) %>% 
+                                   group_by(sampled_time) %>%
+                                   # daily Ct distributions
+                                   summarise(mean=mean(ct_value),
+                                             skewness=skewness(ct_value)) %>% 
+                                   ungroup()) %>%
+                right_join(ct0 %>% group_by(infection_time) %>% 
+                                   # daily case count (by infection)
                                    summarise(infect_count=n()) %>% ungroup() %>% 
                                    rename(sampled_time=infection_time))
         
@@ -173,8 +174,8 @@ merge_Ct_Rt <- function(rt0,ct0){
 select_training_period <- function(df){
         # input data should be merged data (with Ct and inc-Rt)
         initial_start <- df$date[which(df$count>15)][1]
-        interval <- 2:6*10 
-        r.sqr.mat <- matrix(NA,40,5)
+        interval <- 3:6*10 
+        r.sqr.mat <- matrix(NA,40,4)
         for (i in 1:40){ # 40 starts
                 for (j in 1:length(interval)){
                         start_date <- initial_start+i
@@ -186,6 +187,7 @@ select_training_period <- function(df){
                                      data=training.tmp)
                         
                         r.sqr.mat[i,j] <- summary(lm.tmp)$adj.r.square
+                        
                 }
         }
         
@@ -219,7 +221,7 @@ select_training_period <- function(df){
         
         vec.tmp <- round(vec.tmp,3)
         
-        return(list(period=final_training_period[c(1,length(final_training_period))],
+        return(list(period=range(final_training_period),
                     characteristics=vec.tmp))
 }
 
@@ -229,7 +231,6 @@ select_training_period <- function(df){
 evaluate_daily_funcs <- function(rt0,ct0,sim_dyn){
         # sim_dyn = seir_dynamics (sourced, simulation truth)
         start_date <- as.Date("2020-07-01") # day 0 for simulation
-        #rt0
         # get summary df
         ct4 <- merge_Ct_Rt(rt0,ct0)
         
@@ -279,14 +280,13 @@ fit_plot <- function(df, period,input_range,add_legend,panel){
                 data_used = df %>%
                         filter(period == 1)
                 dates = range(data_used$date)
-                input_range <- NULL
+                input_range = NULL
         }
         
         if(period == 'testing') {
                 data_used = df %>%
                         filter(date>as.Date(input_range[1])&
                                        date<as.Date(input_range[2]))
-                        #filter(period == 2)
                 dates = range(data_used$date)
                 add_legend = F
                 panel = NULL
@@ -369,7 +369,7 @@ fit_plot <- function(df, period,input_range,add_legend,panel){
                            size = 1,
                            color = 'black') 
         if (add_legend == T) {
-                p <- p + theme(legend.position = c(0.3,0.95),
+                p <- p + theme(legend.position = c(0.7,1),
                               legend.title = element_text(size = 16, face = 'bold')) 
         } else {
                 p <- p + theme(legend.position = "none")
@@ -427,6 +427,31 @@ fit_plot <- function(df, period,input_range,add_legend,panel){
         
 }
 #
+#' (2) Spearman Rho and directional consistency
+#' also as compared with simulation truth
+Rt_consistency <- function(df,rt1,rt2){
+        # rt1 - incidence-based Rt
+        # rt2 - Ct-based Rt
+        var_name <- c(rt1,rt2)
+        cor.rt <- matrix(NA,2,4)
+        for (i in 1:2){
+                test_tmp <- cor.test(log(df[,var_name[i]]),log(df$Rt),
+                                     method = 'spearman', use="na.or.complete",
+                                     conf.level = .95)
+                cor.rt[i,1:2] <-
+                        c(round(test_tmp$est,2),
+                          ifelse(test_tmp$p.value<0.001,"<0.001",
+                                 round(test_tmp$p.value,3)))
+                cor.rt[i,3] <- 
+                        round(sum(abs(log(df[,var_name[i]])-log(df$Rt)))/nrow(df),3)
+                cor.rt[i,4] <-  
+                        paste0(round((nrow(df[((df[,var_name[i]]-1)*(df$Rt-1))>0,])/
+                                              nrow(df))*100,1),"%")
+        }
+        
+        colnames(cor.rt) <- c("rho","p-value","mae","prop.")
+        return(cor.rt)
+}
 #
 #' (2) boxplot (compared with simulation truth)
 boxplot_func <- function(df,add_legend,rho_ct){
@@ -471,31 +496,6 @@ boxplot_func <- function(df,add_legend,rho_ct){
 }
 #
 #
-#' (3) Spearman Rho and directional consistency
-#' also as compared with simulation truth
-Rt_consistency <- function(df,rt1,rt2){
-        # rt1 - incidence-based Rt
-        # rt2 - Ct-based Rt
-        var_name <- c(rt1,rt2)
-        cor.rt <- matrix(NA,2,4)
-        for (i in 1:2){
-                test_tmp <- cor.test(log(df[,var_name[i]]),log(df$Rt),
-                                     method = 'spearman', use="na.or.complete",
-                                     conf.level = .95)
-                cor.rt[i,1:2] <-
-                        c(round(test_tmp$est,2),
-                          ifelse(test_tmp$p.value<0.001,"<0.001",
-                                 round(test_tmp$p.value,3)))
-                cor.rt[i,3] <- 
-                        round(sum(abs(log(df[,var_name[i]])-log(df$Rt)))/nrow(df),3)
-                cor.rt[i,4] <-  
-                       paste0(round((nrow(df[((df[,var_name[i]]-1)*(df$Rt-1))>0,])/
-                                       nrow(df))*100,1),"%")
-        }
-
-        colnames(cor.rt) <- c("rho","p-value","mae","prop.")
-        return(cor.rt)
-}
 ##
 #####
 

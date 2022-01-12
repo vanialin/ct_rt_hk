@@ -2,6 +2,7 @@
 #' 1. simulate_seir_wrapper
 #' 2. logistic_func
 #' 3. simulate_reporting
+#' 4. odin functions
 #' November 17, 2021
 
 ## source: https://github.com/jameshay218/virosolver/blob/master/R/simulation_functions.R
@@ -73,81 +74,188 @@ logistic_func <- function(t,start_prob,end_prob, growth_rate, switch_point=100){
         start_prob + (end_prob-start_prob)/(1 + exp(-growth_rate*(t-switch_point)))
 }
 
-## Subset line list data by testing strategy. 
+## Subset line list data by detection strategy under symptom-based surveillance 
 simulate_reporting <- function(individuals,
                                solve_times, 
                                frac_report=1,
-                               timevarying_prob=NULL, 
-                               symptomatic=FALSE){
+                               timevarying_prob=NULL){
         ## The basic form is that a constant fraction of individuals are reported each day
         n_indivs <- nrow(individuals)
         sampled_individuals <- individuals
         
         ## If a flat reporting rate
         if(is.null(timevarying_prob)){
-                ## Base case, just sampled individuals at random
-                if(!symptomatic){
-                        ## Sample a fraction of the overall line list and assign each individual a sample time (at random)
-                        ## and a confirmation time (with confirmation delay)
-                        sampled_individuals <- sampled_individuals %>% 
-                                sample_frac(frac_report) %>%
-                                group_by(i) %>%
-                                mutate(sampled_time=sample(solve_times,n()),
-                                       ## We sample but then have to wait for a result
-                                       confirmed_time=sampled_time+confirmation_delay) %>%
-                                ungroup()
-                } else {
-                        ## Symptomatic based surveillance. Observe individuals based on symptom onset date
-                        ## Subset by symptomatic individuals, observe some fraction of these at some delay post symptom onset
-                        sampled_individuals <- sampled_individuals %>% 
-                                filter(is_symp==1) %>% 
-                                sample_frac(frac_report) %>%
-                                mutate(sampled_time=onset_time+confirmation_delay,
-                                       ## We sample individuals some number of days after symptom onset
-                                       confirmed_time=sampled_time)
-                }
+                ## Symptomatic based surveillance. Observe individuals based on symptom onset date
+                ## Subset by symptomatic individuals, observe some fraction of these at some delay post symptom onset
+                sampled_individuals <- sampled_individuals %>% 
+                        filter(is_symp==1) %>% 
+                        sample_frac(frac_report) %>%
+                        mutate(sampled_time=onset_time+confirmation_delay,
+                               ## We sample individuals some number of days after symptom onset
+                               confirmed_time=sampled_time)
                 ## Reporting rate varies over time
         } else {
-                ## Sample entire population
-                if(!symptomatic){
-                        indivs <- unique(sampled_individuals$i)
-                        indivs_test <- indivs
-                        tmp_sampled_indivs <- NULL
-                        for(index in 1:nrow(timevarying_prob)) {
-                                sample_n <- round(timevarying_prob$prob[index]*length(indivs))
-                                sampled_time1 <- timevarying_prob$t[index]
-                                sampled_indivs <- sample(indivs_test, sample_n,replace=FALSE)
-                                tmp_sampled_indivs[[index]] <- sampled_individuals %>% 
-                                        filter(i %in% sampled_indivs) %>% 
-                                        mutate(sampled_time=sampled_time1,
-                                               confirmed_time = sampled_time + confirmation_delay)
-                                indivs_test <- setdiff(indivs_test, sampled_indivs)
-                        }
-                        sampled_individuals <- do.call("bind_rows", tmp_sampled_indivs)
-                } else {
-                        ## This is quite different - if you have symptom onset on day t, there is a probability that you will be observed
-                        ## Symptomatic based surveillance. Observe individuals based on symptom onset date
-                        sampled_individuals <- sampled_individuals %>% 
-                                filter(is_symp==1) %>% ## Subset for symptomatic
-                                left_join(timevarying_prob %>% rename(onset_time=t) %>% ## Join with time-varying reporting rate table
-                                                  dplyr::select(-ver), by="onset_time") %>%
-                                group_by(i) 
-                        
-                        ## Quicker to vectorize
-                        sampled_individuals$is_reported <- rbinom(nrow(sampled_individuals), 1, sampled_individuals$prob) ## Assign individuals as detected or not
-                        
-                        sampled_individuals <- sampled_individuals %>%
-                                filter(is_reported == 1) %>% ## Only take detected individuals
-                                mutate(sampled_time=onset_time+confirmation_delay,
-                                       ## We sample individuals some number of days after symptom onset
-                                       confirmed_time=sampled_time)
-                }
+                ## If you have symptom onset on day t, there is a probability that you will be observed
+                ## Symptomatic based surveillance. Observe individuals based on symptom onset date
+                sampled_individuals <- sampled_individuals %>% 
+                        filter(is_symp==1) %>% ## Subset for symptomatic
+                        left_join(timevarying_prob %>% rename(onset_time=t) %>% ## Join with time-varying reporting rate table
+                                          dplyr::select(-ver), by="onset_time") %>%
+                        group_by(i) 
+                
+                ## Quicker to vectorize
+                sampled_individuals$is_reported <- rbinom(nrow(sampled_individuals), 1, sampled_individuals$prob) ## Assign individuals as detected or not
+                
+                sampled_individuals <- sampled_individuals %>%
+                        filter(is_reported == 1) %>% ## Only take detected individuals
+                        mutate(sampled_time=onset_time+confirmation_delay,
+                               ## We sample individuals some number of days after symptom onset
+                               confirmed_time=sampled_time)
         }
         
         return(sampled_individuals=sampled_individuals)
         
 }
 
+###
+
+#### for simulate_seir_wrapper() below
+## Adapted from
+## http://epirecip.es/epicookbook/chapters/sir-stochastic-discretestate-discretetime/r_odin
+seir_generator <- odin::odin({
+        ## Core equations for transitions between compartments:
+        update(S) <- S - n_SE
+        update(E) <- E + n_SE - n_EI
+        update(I) <- I + n_EI - n_IR
+        update(R) <- R + n_IR
+        update(inc) <- n_SE
+        
+        ## Individual probabilities of transition:
+        p_SE <- 1 - exp(-beta * I / N) # S to E
+        p_EI <- 1 - exp(-sigma) # E to I
+        p_IR <- 1 - exp(-gamma) # I to R
+        
+        ## Draws from binomial distributions for numbers changing between
+        ## compartments:
+        n_SE <- rbinom(S, p_SE)
+        n_EI <- rbinom(E, p_EI)
+        n_IR <- rbinom(I, p_IR)
+        
+        ## Total population size
+        N <- S + E + I + R
+        
+        ## Initial states:
+        initial(S) <- S_ini
+        initial(E) <- E_ini
+        initial(I) <- I_ini
+        initial(R) <- 0
+        initial(inc) <- 0
+        
+        ## User defined parameters - default in parentheses:
+        S_ini <- user(1000)
+        E_ini <- user(0)
+        I_ini <- user(1)
+        beta <- user(0.2)
+        sigma <- user(0.15)
+        gamma <- user(0.1)
+        
+}, verbose = FALSE)
+#
+## Adapted from 
+## http://epirecip.es/epicookbook/chapters/sir-stochastic-discretestate-discretetime/r_odin
+seir_generator_switch <- odin::odin({
+        ## Core equations for transitions between compartments:
+        update(S) <- S - n_SE
+        update(E) <- E + n_SE - n_EI
+        update(I) <- I + n_EI - n_IR
+        update(R) <- R + n_IR
+        update(inc) <- n_SE
+        
+        ## Individual probabilities of transition:
+        beta <- beta1*(step <= t_switch1) + beta2*(step > t_switch1 && step < t_switch2) + beta3*(step >= t_switch2)
+        
+        p_SE <- 1 - exp(-beta * I / N) # S to E
+        p_EI <- 1 - exp(-sigma) # E to I
+        p_IR <- 1 - exp(-gamma) # I to R
+        
+        ## Draws from binomial distributions for numbers changing between
+        ## compartments:
+        n_SE <- rbinom(S, p_SE)
+        n_EI <- rbinom(E, p_EI)
+        n_IR <- rbinom(I, p_IR)
+        
+        ## Total population size
+        N <- S + E + I + R
+        
+        ## Initial states:
+        initial(S) <- S_ini
+        initial(E) <- E_ini
+        initial(I) <- I_ini
+        initial(R) <- 0
+        initial(inc) <- 0
+        
+        ## User defined parameters - default in parentheses:
+        S_ini <- user(1000)
+        E_ini <- user(0)
+        I_ini <- user(1)
+        beta1 <- user(0.2)
+        beta2 <- user(0.2)
+        beta3 <- user(0.2)
+        sigma <- user(0.15)
+        gamma <- user(0.1)
+        t_switch1 <- user(25)
+        t_switch2 <- user(50)
+        
+        
+}, verbose = FALSE)
+#
+## Adapted from 
+## http://epirecip.es/epicookbook/chapters/sir-stochastic-discretestate-discretetime/r_odin
+seir_generator_interpolate <- odin::odin({
+        ## Core equations for transitions between compartments:
+        update(S) <- S - n_SE
+        update(E) <- E + n_SE - n_EI
+        update(I) <- I + n_EI - n_IR
+        update(R) <- R + n_IR
+        update(inc) <- n_SE
+        
+        ## Individual probabilities of transition:
+        p_SE <- 1 - exp(-beta * I / N) # S to E
+        p_EI <- 1 - exp(-sigma) # E to I
+        p_IR <- 1 - exp(-gamma) # I to R
+        
+        ## Draws from binomial distributions for numbers changing between
+        ## compartments:
+        n_SE <- rbinom(S, p_SE)
+        n_EI <- rbinom(E, p_EI)
+        n_IR <- rbinom(I, p_IR)
+        
+        ## Total population size
+        N <- S + E + I + R
+        
+        ## Initial states:
+        initial(S) <- S_ini
+        initial(E) <- E_ini
+        initial(I) <- I_ini
+        initial(R) <- 0
+        initial(inc) <- 0
+        
+        ## User defined parameters - default in parentheses:
+        beta = interpolate(betat,betay,"constant")
+        output(beta) = beta
+        betat[] = user()
+        betay[] = user()
+        dim(betat) <- user()
+        dim(betay) <- length(betat)
+        
+        S_ini <- user(1000)
+        E_ini <- user(0)
+        I_ini <- user(1)
+        sigma <- user(0.15)
+        gamma <- user(0.1)
+        
+        
+}, verbose = FALSE)
 ##
 #####
 

@@ -5,13 +5,17 @@
 # November 2021
 #------------
 
+path <- "/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/2022_01_R2/"
+setwd(path)
+source(paste0(path,"sim_source_general.R"))
+
 #### components ready ####
 ### data
 vl_full <- read.csv(paste0(path_linelist,"vl_ob_linelist_full.csv"))
 load(file=paste0(path_linelist,"SEIR_dynamics.Rda"))
 #
 ### functions
-# 1) to sample equal number of cases per day as in main
+# 1) to sample equal number of cases per day as shown in the representative run
 sample_ct_only <- function(sampled_individuals,daily_count){
         indivs_all <- unique(sampled_individuals$i)
         sampled_individuals <- sampled_individuals %>% 
@@ -42,9 +46,9 @@ check_result <- function(seq,run_time){
                 set.seed(k)
                 ct_renew <- sample_ct_only(vl_full,case_count_list[[seq]])
                 df <- merge_Ct_Rt(rt_list[[seq]],ct_renew) %>%
-                        right_join(rt_list[[seq]]%>%dplyr::select(date,Rt))
+                        right_join(rt_list[[seq]] %>% dplyr::select(date,Rt))
                 lm.tmp <- lm(log(rt_est)~mean+skewness_imputed,
-                             data=df%>%filter(date%in%train_date))
+                             data=df %>% filter(date%in%train_date))
                 est <- exp(predict(lm.tmp,df,interval = "prediction"))
                 df1 <- cbind(df,est) %>% 
                         mutate(period=ifelse(df$date%in%train_date,1,
@@ -81,18 +85,18 @@ check_result <- function(seq,run_time){
 ### read in main line lists
 ct_list <- rt_list <- result_list <- 
         case_count_list <- NULL ## the rt_list is a bit different from the one in "sim_2"
-## already merge with simulation truth in this version
 for (i in 1:4){
         ct_tmp <- read_csv(paste0(path_linelist,"vl_obs_scenario",i,".csv"))
         rt_tmp <- read_csv(paste0(path_rt,"rt_obs1_scenario",i,".csv"))
         result_list[[i]] <- evaluate_daily_funcs(rt_tmp,ct_tmp,seir_dynamics)
         
         rt_tmp1 <- rt_tmp %>% 
+                ## merge with simulation truth in this version
                 right_join(seir_dynamics$seir_outputs %>% dplyr::select(step,Rt) %>%
                                    mutate(date=as.Date("2020-07-01")+step))
         
-        # this line list is used to sample equal number of cases by date of sampled
-        # just as in main (shown in Fig. S10)
+        # this line list is used to sample equal number of cases by date of sampling
+        # just as shown in Fig. S10
         case_count_list[[i]] <- ct_tmp %>% group_by(sampled_time) %>%
                 summarise(n=n()) %>% ungroup() 
         
@@ -122,7 +126,7 @@ for (i in 1:4){
         }
 }
 
-write.csv(out[,c(1,3,5)],paste0(path_plot,"table_s6.csv"),row.names = F)
+write.csv(out[,c(1,3,5)],paste0(path,"table_s6_update.csv"),row.names = F)
 
 ##
 #####
