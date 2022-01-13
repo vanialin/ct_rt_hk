@@ -85,8 +85,8 @@ for (i in 1:5){
 }
 aic.mat <- round(aic.mat,2)
 ## export results
-# aic.mat - Supplementary Table 4
-#write.csv(aic.mat,"results/table_s4.csv",row.names=F)
+# aic.mat - Supplementary Table 3
+#write.csv(aic.mat,"results/table_s3.csv",row.names=F)
 #--------------
 #####
 # get estimate
