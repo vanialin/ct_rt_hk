@@ -4,7 +4,7 @@ Codes for generating results in the manuscript "Incorporating temporal distribut
 
 Data are not available to public due to data consent with relevant party but variable explanation has been written within each script (if necessary) to facilitate interpretation.
 
-## Main
+## main
 Contains codes for generating main Fig. 1-2 and Supplementary Table 1-4.
 
 * 1_merge_data - Calculate daily Ct mean and skewness; merges Ct linelist and case count linelist. 
@@ -13,10 +13,10 @@ Contains codes for generating main Fig. 1-2 and Supplementary Table 1-4.
 * 4_model_loglinear - Daily Ct distribution regressed on incidence-based Rt to generate the model for Ct-predicted Rt. This script recreateS Supplementary Tables 1~4. 
 * **5_plot_fig_2** - This script recreate Fig. 2 based on output data from script 4 above. 
 
-## Supplementary
+## supplementary
 Contains codes for generating all Supplementary Figures as well as Supplementary Table 7.
 
-### Empirical
+### smpirical
 Here we demonstrated underlying mechanisms of Ct methods methods, conducted sensitivity analyses and further validated our model using empirical data in Hong Kong.
 * s1_temporal_ct_delay: demonstrated temporal trends of daily Ct values and daily delay distribution of onset-to-sampling; reproduced Fig. S1.
 * s2_ct_backprojection: backprojected Ct values at onset for symptomatic cases and compared distributions of Ct at onset vs. Ct at sampling over time; reproduced Fig. S2-4.
@@ -26,7 +26,7 @@ Here we demonstrated underlying mechanisms of Ct methods methods, conducted sens
 * s6_model_k-fold_validation: conducted 10-fold cross validation on our model.
 * s7_model_training_selection: evaluated the performance of our model under various length and starts of training periods; reproduced Fig. S8.
 
-### Simulation
+### simulation
 Here we conducted simulation recovery to demonstrate the utility of Ct-based method under different scenarios of case detection under symptom-based surveillance.
 * sim_1_all_linelists: simulated incidence curve and all linelists under the 4 scenarios.
 * sim_2_get_results: reproduced Fig. S9-10.
