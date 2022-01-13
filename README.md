@@ -16,7 +16,7 @@ Contains codes for generating main Fig. 1-2 and Supplementary Table 1-4.
 ## supplementary
 Contains codes for generating all Supplementary Figures as well as Supplementary Table 7.
 
-### smpirical
+### empirical
 Here we demonstrated underlying mechanisms of Ct methods methods, conducted sensitivity analyses and further validated our model using empirical data in Hong Kong.
 * s1_temporal_ct_delay - demonstrate temporal trends of daily Ct values and daily delay distribution of onset-to-sampling; reproduce Fig. S1.
 * s2_ct_backprojection - backproject Ct values at onset for symptomatic cases and compared distributions of Ct at onset vs. Ct at sampling over time; reproduce Fig. S2-4.
