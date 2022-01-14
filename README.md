@@ -7,7 +7,7 @@ Data are not available to public due to data consent with relevant party but var
 ## main
 Contains codes for generating main Fig. 1-2 and Supplementary Table 1-4.
 
-* 1_merge_data - calculates daily Ct mean and skewness; merges Ct linelist and case count linelist. 
+* 1_merge_data - calculate daily Ct mean and skewness; merges Ct linelist and case count linelist. 
 * 2_ct_for_bootstrap - use bootstrap to calculate the 95% CI for smoothed daily Ct (by GAM) and daily Ct skewness. 
 * **3_plot_fig_1** - recreate Fig. 1 based on output data from these two scripts above. 
 * 4_model_loglinear - daily Ct distribution regressed on incidence-based Rt to generate the model for Ct-predicted Rt. This script recreates Supplementary Tables 1~4. 
