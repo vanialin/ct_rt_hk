@@ -16,7 +16,7 @@ source(paste0(path,"sim_source_general.R"))
 # assign onset, incubation periods and reporting delay
 
 ### simulate incidence ----
-set.seed(1) 
+#set.seed(XX) 
 seir_dynamics <- simulate_seir_wrapper(population_n=population_n,solve_times=times,
                                        pars=pars, switch_model = T,beta_smooth = 0.8)
 
@@ -32,7 +32,7 @@ abline(h=3,lty=2,col="red")
 
 ### simulate the whole population ----
 ## if is_infect = 1, assign onset, incubation period and confirmation delay
-set.seed(1)
+#set.seed(XX)
 complete_linelist <- simulate_infected_cases(seir_dynamics$incidence,
                                              times=times,population_n=population_n)
 write_csv(x=complete_linelist,path=paste0(path_linelist,"complete_linelist.csv"))
@@ -47,7 +47,7 @@ symp_linelist <- complete_linelist %>% filter(is_infected==1&is_symp==1)
 #########
 # simulate viral load trajectories for all symptomatic infected individuals
 #a <- Sys.time()
-set.seed(1)
+#set.seed(XX)
 vl_list <- get_indiv_trajectory(symp_linelist)
 save(vl_list,file=paste0(path_linelist,"vl_all_linelist.Rda")) ## this can be large
 #Sys.time()-a
@@ -76,7 +76,7 @@ write_csv(x=vl_full,path=paste0(path_linelist,"vl_ob_linelist_full.csv"))
 # get detected cases under each scenario
 
 #### scenarios
-set.seed(1)  #### apply for ALL scenarios below ****
+#set.seed(XX)  #### apply for ALL scenarios below ****
 ### scenario 1&2 - flat detection at 25% and 10%
 case_flat_limited <- NULL
 for (i in 1:2){
