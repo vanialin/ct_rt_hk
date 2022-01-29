@@ -33,5 +33,8 @@ Here we conducted simulation recovery to demonstrate the utility of Ct-based met
 * sim_funcs/sim_source - contain sourced functions used for simulation.   
 In "partab_seir_switch_model_hk.csv" we provided parameters used for the transmission mode.
 
+## data
+In the data folder we have provided both the empirical data of daily aggregate values (including case counts, incidence-based Rt and Ct distributions) and a set of synthetic data under simulation for reference. 
+
 
 [Operated under R version 4.1.2 (R Development Core Team, 2021)]
