@@ -30,7 +30,7 @@ table(daily.linelist$period,useNA = 'always') # checked
 correlation.rho <- function(df,var1,var2){
         cortest <- cor.test(df[,var1],df[,var2],
                             use="na.or.complete",method="spearman")
-        out <- round(c(cortest$estimate,cortest$p.value),2)
+        out <- c(round(cortest$estimate,2),round(cortest$p.value,3))
         return(out)
 }
 # calculate rho between Ct mean/skewness and Rt
@@ -112,7 +112,7 @@ for (i in 1:2){
                 with(df.tmp,cor.test(log(local.rt.mean),log(fit),
                                      use="na.or.complete",method="spearman"))
         cor.rt[i,1] <- round(cortest.tmp$est,2)
-        cor.rt[i,2] <- round(cortest.tmp$p.value,2)
+        cor.rt[i,2] <- round(cortest.tmp$p.value,3)
         consistency[i] <- 
                 nrow(df.tmp[((df.tmp$local.rt.mean-1)*(df.tmp$fit-1))>0,])/
                 nrow(df.tmp)
@@ -136,7 +136,7 @@ for (j in 1:3){
                                                      use="na.or.complete",method="spearman"))
                         
                         cor.rt2[i,3*(j-1)+2] <- round(cortest.tmp$est,2)
-                        cor.rt2[i,3*j] <- round(cortest.tmp$p.value,2)
+                        cor.rt2[i,3*j] <- round(cortest.tmp$p.value,3)
                 }
                 
                 cor.rt2[i,3*(j-1)+1] <- 
@@ -146,8 +146,8 @@ for (j in 1:3){
         }
 }
 ## export as table
-cor.rt2[cor.rt2==0] <- "<0.01"
-#write.csv(cor.rt2,"results/table_s4.csv",row.names=F)
+cor.rt2[cor.rt2==0] <- "<0.001"
+#write.csv(cor.rt2,"2022_01_final/table_s4_new.csv",row.names=F)
 #
 ##
 ## export estimated daily Ct-based Rt
@@ -174,7 +174,7 @@ for (i in 1:2){
                             exp(confint(model.list[[i]])[2:3,1:2])),2)
         # p-values
         coef.mat[(2*i-1):(2*i),4] <- 
-                round(summary(model.list[[i]])$coefficients[2:3,4],2)
+                round(summary(model.list[[i]])$coefficients[2:3,4],3)
 }
 coef.out <- matrix(NA,4,3)
 for (i in 1:4){

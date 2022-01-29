@@ -63,26 +63,27 @@ start.vec <- c(0,71)
 #
 #--------
 ## start plotting
-pdf("results/Fig_1.pdf",width = 15,height = 8)
+pdf("2022_01_final/Fig_1.pdf",width = 8,height = 4.3)
 ## panel A: epi curve
-par(mar=c(4.5,3,3,3)+0.1)
+#par(mar=c(4.5,3,3,3)+0.1)
+par(ps=6,tck=-.04,lwd=1)
+par(mar=c(2.3,1.5,1.2,1)+0.1)
 par(fig=c(0,0.7,0.6,1))
 plot(NA,xlim=c(1,x.total),ylim=c(0,150),xlab=NA,ylab=NA,axes = F,main=NA)
 # y-axis for number of cases
-axis(4,0:5*30,labels=rep(NA,6),line=-1.5)
-mtext(0:5*30,side=4,at=0:5*30,las=1,line=-.5)
-mtext("Number of cases",side=4,line=1.4)
+axis(4,0:5*30,labels=rep(NA,6),line=-.5,tck=-.04,lwd.tick=.5,lwd=.5)
+mtext(0:5*30,side=4,at=0:5*30,las=1,line=-.2)
+mtext("Number of cases",side=4,line=.2)
 # x-axis
 day.axis <- c(0:(x.length[1]-1),gap.wave4:(x.length[2]+gap.wave4-1))
 axis(1,at=day.axis,
-     labels = rep(NA,length(day.axis)),tck=-.02)
-axis(1,at=x.pos.combine,labels = rep(NA,length(x.pos.combine)),las=1,tck=-.04)
-axis(1,at=c(0,131,221),labels=rep(NA,3),tck=-.13)
-axis.break(1,x.length[1]+4,style="slash",brw=.015)
+     labels = rep(NA,length(day.axis)),tck=-.01,lwd.tick=.5,lwd=.5)
+axis(1,at=c(0,131,221),labels=rep(NA,3),tck=-.07,lwd.tick=.5,lwd=.5)
+axis.break(1,x.length[1]+4,style="slash",brw=.01)
 # add axis legend separately
 for (i in 1:2){
         axis(1,at=x.month.pos[[i]],
-             labels = rep(NA,length(x.month.pos[[i]])),tck=-.06)
+             labels = rep(NA,length(x.month.pos[[i]])),tck=-.04,lwd=.5)
 }
 # case count **by reporting date**
 for (i in 1:2){
@@ -91,15 +92,16 @@ for (i in 1:2){
                 polygon(c(rep(j-1.5+start.vec[i],2),rep(j-0.5+start.vec[i],2)),
                         c(0,rep(df.tmp$all.cases[j],2),0),
                         col="#dad5d4", # all cases
-                        border="white")
+                        border="white",lwd=.5)
         }
 }
 ## Rt part
 par(new=T)
 plot(NA, ylim=c(0,5),xlim=c(0,x.total),xlab=NA,ylab=NA,axes=F)
-axis(2,at=0:5,las=1,line=-.8)
-mtext("Incidence-based Rt",side=2,line=1)
-lines(c(0,x.total),rep(1,2),lty=2)
+axis(2,at=0:5,las=1,line=-.3,tck=-.04,labels = rep(NA,6),lwd.tick=.5,lwd=.5)
+mtext(0:5,side=2,at=0:5,las=1,line=.2)
+mtext("Incidence-based Rt",side=2,line=.7)
+lines(c(0,x.total),rep(1,2),lty=2,lwd=.5)
 for (i in 1:2){
         rt.tmp <- daily.ct[daily.ct$period==i,]
         polygon(c(rt.tmp$test.to.start+start.vec[i],
@@ -107,41 +109,39 @@ for (i in 1:2){
                 c(rt.tmp$local.rt.lower,rev(rt.tmp$local.rt.upper)),
                 col=alpha("black",.2),border=F) 
         lines(rt.tmp$test.to.start+start.vec[i],rt.tmp$local.rt.mean,
-              col=alpha("black",.9),lwd=2) # Rt (actual)
+              col=alpha("black",.9),lwd=1) # Rt (actual)
 }
 # add bracket
 for (i in 1:2){
         brackets(start.vec[i],5,
-                 start.vec[i]+x.length[i],5,type = 4,xpd=T,h=.3)
+                 start.vec[i]+x.length[i],5,type = 4,xpd=T,h=.3,lwd=.5)
         mtext(month.title[i],side=3,at=x.length[i]/2+start.vec[i],
-              line=.8,font=2,cex=1)
+              line=.3,font=2)
 }
 # legend
-polygon(c(160,160,163,163),c(4.4,4.6,4.6,4.4),col="#dad5d4",border="white")
+polygon(c(158,158,163,163),c(4.4,4.6,4.6,4.4),col="#dad5d4",border="white")
 text(163.5,4.5,"Cases by reporting date",adj=0)
-lines(c(160,163),rep(3.8,2),lwd=2)
-text(163.5,3.8,"Incidence-based Rt",adj=0)
+lines(c(160,163),rep(4,2),lwd=1)
+text(163.5,4,"Incidence-based Rt",adj=0)
 mtext("a",side=3,line=.5,adj=0,font=2,cex=1.4)
 ##
 ## panel B: Ct distribution
 par(fig=c(0,0.7,0.3,0.7),new=T)
 plot(NA,xlim=c(1,x.total),ylim=c(0,150),xlab=NA,ylab=NA,axes = F,main=NA)
 # y-axis for number of cases
-axis(4,0:5*30,labels=rep(NA,6),line=-1.5)
-mtext(0:5*30,side=4,at=0:5*30,las=1,line=-.5)
-mtext("Number of records",side=4,line=1)
+axis(4,0:5*30,labels=rep(NA,6),line=-.5,tck=-.04,lwd.tick=.5,lwd=.5)
+mtext(0:5*30,side=4,at=0:5*30,las=1,line=-.2)
+mtext("Number of cases",side=4,line=.2)
 # x-axis
 day.axis <- c(0:(x.length[1]-1),gap.wave4:(x.length[2]+gap.wave4-1))
 axis(1,at=day.axis,
-     labels = rep(NA,length(day.axis)),tck=-.02)
-axis(1,at=x.pos.combine,labels = rep(NA,length(x.pos.combine)),
-     las=1,tck=-.04,cex.axis=1)
-axis(1,at=c(0,131,221),labels=rep(NA,3),tck=-.13)
-axis.break(1,x.length[1]+4,style="slash",brw=.015)
+     labels = rep(NA,length(day.axis)),tck=-.01,lwd.tick=.5,lwd=.5)
+axis(1,at=c(0,131,221),labels=rep(NA,3),tck=-.07,lwd.tick=.5,lwd=.5)
+axis.break(1,x.length[1]+4,style="slash",brw=.01)
 # add axis legend separately
 for (i in 1:2){
         axis(1,at=x.month.pos[[i]],
-             labels = rep(NA,length(x.month.pos[[i]])),tck=-.06)
+             labels = rep(NA,length(x.month.pos[[i]])),tck=-.04,lwd=.5)
 }
 # record count **by sampling date**
 for (i in 1:2){
@@ -150,13 +150,14 @@ for (i in 1:2){
                 polygon(c(rep(j-1.5+start.vec[i],2),rep(j-0.5+start.vec[i],2)),
                         c(0,rep(df.tmp$records[j],2),0),
                         col="#838584", # all record
-                        border="white")
+                        border="white",lwd=.5)
         }
 }
 par(new=T)
 plot(NA,xlim=c(1,x.total),ylim=rev(c(18,28)),xlab=NA,ylab=NA,axes = F,main=NA)
-axis(2,at=9:14*2,las=1,cex.axis=1,line=-.8)
-mtext("Ct value",side=2,line=1.5)
+axis(2,at=9:14*2,las=1,line=-.3,tck=-.04,labels = rep(NA,6),lwd=.5)
+mtext(9:14*2,side=2,at=9:14*2,las=1,line=.2)
+mtext("Ct value",side=2,line=.7)
 # plot GAM
 for (i in 1:2){
         df.tmp <- daily.ct[daily.ct$period==i,]
@@ -164,41 +165,43 @@ for (i in 1:2){
                   rev(df.tmp$test.to.start)+start.vec[i]),
                 c(df.tmp$gam.lb,rev(df.tmp$gam.ub)),
                 col=alpha("orange",.3),border=F) 
-        lines(df.tmp$test.to.start+start.vec[i],df.tmp$ct.gam,col="orange",lwd=1.5)
+        lines(df.tmp$test.to.start+start.vec[i],df.tmp$ct.gam,col="orange",lwd=1)
 }
 # legend
-polygon(c(160,160,163,163),c(18.5,19,19,18.5),col="#838584",border="white")
+polygon(c(158,158,163,163),c(18.5,19,19,18.5),col="#838584",border="white")
 text(163.5,18.75,"Records by sampling date",adj=0)
-lines(c(160,163),rep(20,2),lwd=2,col="orange")
-text(163.5,20,"Ct smoothed by GAM",adj=0)
-mtext("b",side=3,line=.5,adj=0,font=2,cex=1.4)
+lines(c(160,163),rep(19.7,2),col="orange",lwd=1)
+text(163.5,19.7,"Ct smoothed by GAM",adj=0)
+mtext("b",side=3,line=.2,adj=0,font=2,cex=1.4)
 ##
 ## panel C: Ct skewness
 ### skewness
 par(fig=c(0,0.7,0,0.4),new=T)
 plot(NA,xlim=c(1,x.total),ylim=c(-2,2),xlab=NA,ylab=NA,axes = F,main=NA)
-axis(2,at=-2:2,las=1,line=-.8)
-mtext("Skewness",side=2,line=1.5)
-lines(c(1,x.total),rep(0,2),col="grey",lty=2)
+axis(2,at=-2:2,las=1,line=-.3,tck=-.04,labels = rep(NA,5),lwd.tick=.5,lwd=.5)
+mtext(-2:2,side=2,at=-2:2,las=1,line=.2)
+mtext("Skewness",side=2,line=.7)
+lines(c(1,x.total),rep(0,2),col="grey",lty=2,lwd=.5)
 # x-axis
 day.axis <- c(0:(x.length[1]-1),gap.wave4:(x.length[2]+gap.wave4-1))
 axis(1,at=day.axis,
-     labels = rep(NA,length(day.axis)),tck=-.02)
-axis(1,at=x.pos.combine,labels = x.day.combine,las=1,tck=-.04)
-axis(1,at=c(0,131,221),labels=rep(NA,3),tck=-.13)
-axis.break(1,x.length[1]+4,style="slash",brw=.015)
+     labels = rep(NA,length(day.axis)),tck=-.02,lwd.tick=.5,lwd=.5)
+axis(1,at=x.pos.combine,labels = rep(NA,length(x.pos.combine)),las=1,tck=-.04,lwd.tick=.5,lwd=.5)
+mtext(x.day.combine,side=1,at=x.pos.combine,line=.2)
+axis(1,at=c(0,131,221),labels=rep(NA,3),tck=-.13,lwd.tick=.5,lwd=.5)
+axis.break(1,x.length[1]+4,style="slash",brw=.01)
 # add axis legend separately
 for (i in 1:2){
         axis(1,at=x.month.pos[[i]],
-             labels = rep(NA,length(x.month.pos[[i]])),tck=-.06)
+             labels = rep(NA,length(x.month.pos[[i]])),tck=-.06,lwd.tick=.5,lwd=.5)
         for (k in 1:length(x.month.list[[i]])){
-                mtext(x.month.lab[[i]][k],side=1,line=2.3,
+                mtext(x.month.lab[[i]][k],side=1,line=.8,
                       at=x.month.list[[i]][k],adj=0)
         } 
 }
 # add longer axis
-mtext("2020",at = 66, side=1,line=3.5,font=2)
-mtext("2021",at = 175, side=1,line=3.5,font=2)
+mtext("2020",at = 66, side=1,line=1.5,font=2)
+mtext("2021",at = 175, side=1,line=1.5,font=2)
 # skewness
 for (i in 1:2){
         df.tmp <- daily.ct[daily.ct$period==i,]
@@ -206,13 +209,13 @@ for (i in 1:2){
                 if (!(is.na(df.tmp$skewness[n])|is.nan(df.tmp$skewness[n]))){
                         lines(rep(df.tmp$test.to.start[n]+start.vec[i],2),
                               c(df.tmp$skewness.ub[n],df.tmp$skewness.lb[n]),
-                              col=alpha("#005b96",.6))
+                              col=alpha("#005b96",.6),lwd=.6)
                         points(df.tmp$test.to.start[n]+start.vec[i],
-                               df.tmp$skewness[n],col="#005b96",pch=18,cex=.7)
+                               df.tmp$skewness[n],col="#005b96",pch=18,cex=.3)
                 }
         }
 }
-mtext("c",side=3,line=.5,adj=0,font=2,cex=1.4)
+mtext("c",side=3,line=.2,adj=0,font=2,cex=1.4)
 ####
 ####
 ## correlation panels
@@ -221,48 +224,51 @@ df.list <- list()
 for (i in 1:2){
         df.list[[i]] <- daily.ct[daily.ct$period==i,]
 }
-par(fig=c(0.7,1,0.5,1),mar=c(5,4,4,1)+0.1,new=T)
+#par(fig=c(0.7,1,0.5,1),mar=c(5,4,4,1)+0.1,new=T)
+par(lwd=.5)
+par(fig=c(0.7,1,0.5,1),mar=c(2.3,2,2,1)+0.1,new=T)
 plot(NA,xlim=c(0.5,5.5),ylim=c(0,4),xlab=NA,ylab=NA,axes=F)
 lines(c(0.5,5.5),rep(1,2),lty=2,col="grey")
 boxplot(df.list[[1]]$local.rt.mean~df.list[[1]]$mean.cat,ylim=c(0,4),axes=F,
-        ylab=NA,xlab=NA,boxwex=.15,at=1:5-0.1,whisklty = 1,outpch=16,outcex=.7,staplecol="white",
+        ylab=NA,xlab=NA,boxwex=.15,at=1:5-0.1,whisklty = 1,outpch=16,outcex=.3,staplecol="white",
         col="orange",add=T)
 boxplot(df.list[[2]]$local.rt.mean~df.list[[2]]$mean.cat,ylim=c(0,4),axes=F,
-        ylab=NA,xlab=NA,boxwex=.15,at=1:5+0.1,whisklty = 1,outpch=16,outcex=.7,staplecol="white",
+        ylab=NA,xlab=NA,boxwex=.15,at=1:5+0.1,whisklty = 1,outpch=16,outcex=.3,staplecol="white",
         col="#ffdbac",add=T)
 axis(1,at=1:5,labels = c(expression(""<="20"),"20-22","22-24","24-26",
-                         expression("">"26")))
+                         expression("">"26")),line=.5,padj = -3,lwd.tick=.5,lwd=.5)
 mtext("Incidence-based Rt",side=2,line=1)
-mtext("Daily mean Ct",side=1,line=2.5)
-axis(2,at=0:4,las=1,line=-1)
+mtext("Daily mean Ct",side=1,line=1.3)
+axis(2,at=0:4,las=1,line=0,hadj=-.5,lwd.tick=.5,lwd=.5)
 ## add legend
 polygon(c(3.2,3.2,3.4,3.4),c(3.7,3.8,3.8,3.7),col="orange")
 text(3.45,3.75,"Training",adj=0)
-polygon(c(3.2,3.2,3.4,3.4),c(3.3,3.4,3.4,3.3),col="#ffdbac")
-text(3.45,3.35,"Testing",adj=0)
-mtext("d",side=3,line=1,adj=0,font=2,cex=1.4)
+polygon(c(3.2,3.2,3.4,3.4),c(3.4,3.5,3.5,3.4),col="#ffdbac")
+text(3.45,3.45,"Testing",adj=0)
+mtext("d",side=3,line=.4,adj=0,font=2,cex=1.4)
 ##
 ## panel E: skewness and Rt
 par(fig=c(0.7,1,0,.5),new=T)
 plot(NA,xlim=c(0.5,4.5),ylim=c(0,4),xlab=NA,ylab=NA,axes=F)
 lines(c(0.5,4.5),rep(1,2),lty=2,col="grey")
 boxplot(df.list[[1]]$local.rt.mean~df.list[[1]]$skewness.cat,ylim=c(0,4),axes=F,
-        ylab=NA,xlab=NA,boxwex=.15,at=1:4-0.1,whisklty = 1,outpch=16,outcex=.7,staplecol="white",
+        ylab=NA,xlab=NA,boxwex=.15,at=1:4-0.1,whisklty = 1,outpch=16,outcex=.3,staplecol="white",
         col="#005b96",add=T)
 boxplot(df.list[[2]]$local.rt.mean~df.list[[2]]$skewness.cat,ylim=c(0,4),axes=F,
-        ylab=NA,xlab=NA,boxwex=.15,at=1:4+0.1,whisklty = 1,outpch=16,outcex=.7,staplecol="white",
+        ylab=NA,xlab=NA,boxwex=.15,at=1:4+0.1,whisklty = 1,outpch=16,outcex=.3,staplecol="white",
         col="white",add=T)
-axis(1,at=1:4,labels = c(expression(""<="-0.3"),"(-0.3,0]","(0,0.3]",
-                         expression("">"0.3")))
-mtext("Daily Ct skewness",side=1,line=2.5)
+axis(1,at=c(1,4),labels = c(expression(""<="-0.3"),expression("">"0.3")),
+     line=.5,padj = -3,lwd.tick=.5,lwd=.5)
+axis(1,at=c(2,3),labels = c("(-0.3,0]","(0,0.3]"),line=.5,padj = -3,lwd.tick=.5,lwd=.5)
+mtext("Daily Ct skewness",side=1,line=1.3)
 mtext("Incidence-based Rt",side=2,line=1)
-axis(2,at=0:4,las=1,line=-1)
+axis(2,at=0:4,las=1,line=0,hadj = -.5,lwd.tick=.5,lwd=.5)
 ## add legend
 polygon(c(2.6,2.6,2.8,2.8),c(3.7,3.8,3.8,3.7),col="#005b96")
 text(2.85,3.75,"Training",adj=0)
-polygon(c(2.6,2.6,2.8,2.8),c(3.3,3.4,3.4,3.3),col="white")
-text(2.85,3.35,"Testing",adj=0)
-mtext("e",side=3,line=1,adj=0,font=2,cex=1.4)
+polygon(c(2.6,2.6,2.8,2.8),c(3.4,3.5,3.5,3.4),col="white")
+text(2.85,3.45,"Testing",adj=0)
+mtext("e",side=3,line=.4,adj=0,font=2,cex=1.4)
 #
 dev.off()
 ##

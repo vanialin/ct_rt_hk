@@ -26,7 +26,7 @@ ct.rt <- read.csv("results/daily_ct_rt.csv",as.is = T)
 # lwr - lower range for prediction interval
 #
 
-source("ggplot_default.R")
+source("ggplot_default_editing.R")
 # functions set for plotting 
 predPlot = function(ct, period, panel){
         
@@ -75,19 +75,19 @@ predPlot = function(ct, period, panel){
                           aes(x = date,
                               y = local.rt.mean*25,
                               color = 'empirical'),
-                          size = 1) +
+                          size = .3) +
                 #ct rt
                 geom_point(aes(x = date,
                                y = fit*25,
                                color = 'predicted'),
-                           size = 2) +
+                           size = .3) +
                 
                 geom_segment(aes(x = date,
                                  y = lwr*25,
                                  xend = date,
                                  yend = upr*25,
                                  color = 'predicted'),
-                             size = 0.8) + 
+                             size = 0.3) + 
                 
                 scale_y_continuous(name = 'Cases',
                                    limits = c(0, 150),
@@ -105,11 +105,11 @@ predPlot = function(ct, period, panel){
                 
                 geom_hline(yintercept = 1*25,
                            linetype = 'dashed',
-                           size = 1,
+                           size = .3,
                            color = 'grey') +
                 
                 theme(legend.position = c(0.8, 0.85),
-                      legend.title = element_text(size = 16, face = 'bold')) +
+                      legend.title = element_text(size = 5, face = 'bold')) +
                 labs(title = panel)
         
         if(period == 'training'){
@@ -166,10 +166,13 @@ predBoxPlot = function(ct, panel){
                         x = pred_rt_cat,
                         y = local.rt.mean,
                         fill = group),
-                        width = 0.3) +
+                        width = 0.3,
+                        notchwidth = .1,
+                        outlier.size = .1,
+                        lwd=.2) +
                 geom_hline(yintercept = 1,
                            linetype = 'dashed',
-                           size = 1,
+                           size = .3,
                            color = 'grey') +
                 scale_y_continuous(name = 'Incidence-based Rt',
                                    limits = c(0, 4),
@@ -180,7 +183,7 @@ predBoxPlot = function(ct, panel){
                                  labels = c('<0.5', '0.5-1.0', '1.0-1.5', '>1.5')) +
                 scale_fill_manual(name = '',
                                   values = c('#c9c9ff', '#f3cfcf')) +
-                theme(legend.position = c(0.35, 0.9)) +
+                theme(legend.position = c(0.7, 0.9)) +
                 labs(title = panel)
 }
 #
@@ -217,7 +220,7 @@ retroExamplePlot = function(df, date, panel){
                 
                 geom_hline(yintercept = 1 * 20,
                            linetype = 'dashed',
-                           size = .8,
+                           size = .25,
                            color = 'black') +
                 
                 # case rt
@@ -237,13 +240,13 @@ retroExamplePlot = function(df, date, panel){
                           aes(x = date,
                               y = local.rt.mean * 20,
                               color = 'empirical'),
-                          size = .8) +
+                          size = .3) +
                 # ct rt
                 geom_point(data = data_ct,
                            aes(x = date,
                                y = fit * 20,
                                color = 'predicted'),
-                           size = 1.3,
+                           size = .15,
                            alpha = 0.8) +
                 
                 geom_segment(data = data_ct,
@@ -252,14 +255,14 @@ retroExamplePlot = function(df, date, panel){
                                  xend = date,
                                  yend = upr * 20,
                                  color = 'predicted'),
-                             size = .7,
+                             size = .2,
                              alpha = 0.8) +
                 
                 ### arrow indicating current day for prediction
-                geom_segment(aes(x = max(data_ct$date), y = 113, 
-                                 xend = max(data_ct$date), yend = 100),
-                             arrow = arrow(length = unit(0.25, "cm")),
-                             size = .8) +
+                geom_segment(aes(x = max(data_ct$date), y = 111, 
+                                 xend = max(data_ct$date), yend = 98),
+                             arrow = arrow(length = unit(0.1, "cm")),
+                             size = .15) +
                 
                 scale_y_continuous(name = 'Cases',
                                    limits = c(0, 120),
@@ -274,13 +277,18 @@ retroExamplePlot = function(df, date, panel){
                              date_breaks = "1 week", 
                              date_labels = "%d/%m",
                              expand = c(0.01, 0)) +
-                
-                theme(legend.title = element_text(size = 16, face = 'bold'),
+                theme(legend.title = element_text(size = 5, face = 'bold'),
                       plot.title.position = 'plot',
-                      plot.title = element_text(size = 16, face = 'bold')) +
+                      plot.title = element_text(size = 8, face = 'bold'),
+                      axis.text.x = element_text(size = 4.3,
+                                                 colour = "black"),
+                      plot.margin = unit(c(0.01,0.1,0.01,0.1), "cm"),
+                      #change legend key size
+                      legend.key.height = unit(.15, 'cm'), #change legend key height
+                      legend.key.width = unit(.2, 'cm')) +
                 labs(title = panel) +
-                annotate("text", x = max(data_ct$date)-6.5, y = 117, 
-                         label = "Date of estimation", size=4) +
+                annotate("text", x = max(data_ct$date)-8, y = 115, 
+                         label = "Date of estimation", size=1.35) +
                 scale_fill_manual(name = NULL,
                                   values = c(empirical = 'black',
                                              predicted = '#e49292'),
@@ -293,7 +301,7 @@ retroExamplePlot = function(df, date, panel){
         
         if(panel == 'a'){
                 
-                p = p + theme(legend.position = c(0.65, 0.85))
+                p = p + theme(legend.position = c(0.7, 0.8))
                 
         } else {
                 
@@ -338,7 +346,7 @@ p = grid.arrange(
                               c(3,6,6),
                               c(4,6,6))
 )
-ggsave("results/Fig_2.pdf",p,width = 22, height = 12)
+ggsave("2022_01_final/Fig_2.pdf",p,width = 7, height = 4)
 ##
 ######
 
