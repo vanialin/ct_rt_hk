@@ -17,7 +17,7 @@ library(pROC)
 library(gridExtra)
 require(e1071)
 #
-#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
+#setwd()
 # read in "daily_ct_rt.csv"
 ct.rt <- read.csv("results/daily_ct_rt.csv",as.is = T)
 ## variable explanations (for Ct-based Rt in the data)
@@ -346,7 +346,7 @@ p = grid.arrange(
                               c(3,6,6),
                               c(4,6,6))
 )
-ggsave("2022_01_final/Fig_2.pdf",p,width = 7, height = 4)
+ggsave("results/Fig_2.pdf",p,width = 7, height = 4)
 ##
 ######
 

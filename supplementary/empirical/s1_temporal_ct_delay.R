@@ -16,9 +16,10 @@
 require(plotrix)
 require(lubridate)
 require(dplyr)
+require(mgcv)
 require(scales)
 #
-#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
+#setwd()
 # read in "data_ct.csv" and "data_cases.csv"
 ct.linelist <- read.csv("data/data_ct.csv")
 daily.ct <- read.csv("results/daily_ct_bootstrap.csv")
@@ -75,7 +76,7 @@ for (i in 1:2){
                                                          as.Date(end.date[i]))<=0,]
         df.used$test.to.start <- 
                 as.numeric(as.Date(df.used$date.test)-as.Date(start.date[i]))
-        df.used <- df.used[df.used$test.to.onset<=40,] # for plotting
+        #df.used <- df.used[df.used$test.to.onset<=40,] # for plotting
         mbs.list[[i]] <- df.used
         a <- boxplot(df.used$test.to.onset~df.used$test.to.start)
         median.delay.list[[i]] <- a$stats[3,]
@@ -281,6 +282,7 @@ mtext("Date of sampling",side=1,line=2.8)
 for (i in 1:2){
         mbs.tmp <- mbs.list[[i]]
         mbs.tmp$test.to.start <- mbs.tmp$test.to.start+start.vec[i]
+        mbs.tmp <- mbs.tmp[!is.na(mbs.tmp$test.to.onset),]
         ord <- unique(mbs.tmp$test.to.start)[order(unique(mbs.tmp$test.to.start))]%>%na.omit()
         boxplot(mbs.tmp$test.to.onset~mbs.tmp$test.to.start,
                 add=T,axes=F,at=ord,cex.lab=1.3,border=NA,

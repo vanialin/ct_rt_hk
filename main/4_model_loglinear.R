@@ -11,7 +11,7 @@
 ##                 daily Ct mean, median and skewness (imputed)
 ######################################################
 #
-#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
+#setwd()
 # read in "data_daily_all.csv"
 daily.linelist <- read.csv("data/data_daily_all.csv",as.is=T)
 #
@@ -147,7 +147,7 @@ for (j in 1:3){
 }
 ## export as table
 cor.rt2[cor.rt2==0] <- "<0.001"
-#write.csv(cor.rt2,"2022_01_final/table_s4_new.csv",row.names=F)
+#write.csv(cor.rt2,"results/table_s4_new.csv",row.names=F)
 #
 ##
 ## export estimated daily Ct-based Rt

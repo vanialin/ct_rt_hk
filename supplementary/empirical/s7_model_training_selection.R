@@ -15,7 +15,7 @@ require(plotrix)
 require(dplyr)
 require(pBrackets)
 #
-#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
+#setwd()
 # read in "data_daily_all.csv"
 daily.linelist <- read.csv("data/data_daily_all.csv",as.is=T)
 #

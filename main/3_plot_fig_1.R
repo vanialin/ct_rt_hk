@@ -17,7 +17,7 @@ require(lubridate)
 require(scales)
 require(pBrackets)
 #
-#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
+#setwd()
 # read in "daily_ct_bootstrap.csv"
 daily.ct <- read.csv("results/daily_ct_bootstrap.csv")
 #
@@ -63,7 +63,7 @@ start.vec <- c(0,71)
 #
 #--------
 ## start plotting
-pdf("2022_01_final/Fig_1.pdf",width = 8,height = 4.3)
+pdf("results/Fig_1.pdf",width = 8,height = 4.3)
 ## panel A: epi curve
 #par(mar=c(4.5,3,3,3)+0.1)
 par(ps=6,tck=-.04,lwd=1)

@@ -15,7 +15,7 @@
 require(e1071) # to calculate skewness
 require(mgcv)
 #
-#setwd("/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/")
+#setwd()
 # read in "data_ct.csv" and "data_daily_all.csv"
 ct.linelist <- read.csv("data/data_ct.csv")
 daily.linelist <- read.csv("data/data_daily_all.csv",as.is=T)

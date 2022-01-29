@@ -4,7 +4,7 @@
 # November 2021
 #------------
 
-path <- "/Users/vanialam/OneDrive - connect.hku.hk/vanialam/research_vania/epi_wave_2021/program/2021_09_R1/publish (EDIT HERE)/2022_01_R2/"
+path <- "HERE IS WHERE YOU PUT YOUR CODES"
 setwd(path)
 source(paste0(path,"sim_source_general.R"))
 

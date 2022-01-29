@@ -32,6 +32,4 @@ ggplot_theme <-
 #
 #
 
-# the previous version of 9 is 12, and 11 is 16
-# 9 and 11
 
