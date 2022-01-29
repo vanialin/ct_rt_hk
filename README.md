@@ -2,7 +2,6 @@
  
 Codes for generating results in the manuscript "Incorporating temporal distribution of population-level viral load enables real-time estimation of COVID-19 transmissibility"
 
-Data are not available to public due to data consent with relevant party but variable explanation has been written within each script (if necessary) to facilitate interpretation.
 
 ## main
 Contains codes for generating main Fig. 1-2 and Supplementary Table 1-4.
