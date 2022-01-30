@@ -2,6 +2,8 @@
  
 Codes for generating results in the manuscript "Incorporating temporal distribution of population-level viral load enables real-time estimation of COVID-19 transmissibility"
 
+## data
+In the data folder we have provided both the empirical data of daily aggregate values (including case counts, incidence-based Rt and Ct distributions) and a set of synthetic data under simulation for reference. 
 
 ## main
 Contains codes for generating main Fig. 1-2 and Supplementary Table 1-4.
@@ -32,9 +34,5 @@ Here we conducted simulation recovery to demonstrate the utility of Ct-based met
 * sim_3_run_100times - run 100 times to get the CI for spearman's correlation rho between incidence-based Rt and Ct-Rt under each simulated scenario; reproduce Supplementary Table 7.
 * sim_funcs/sim_source - contain sourced functions used for simulation.   
 In "partab_seir_switch_model_hk.csv" we provided parameters used for the transmission mode.
-
-## data
-In the data folder we have provided both the empirical data of daily aggregate values (including case counts, incidence-based Rt and Ct distributions) and a set of synthetic data under simulation for reference. 
-
 
 [Operated under R version 4.1.2 (R Development Core Team, 2021)]
