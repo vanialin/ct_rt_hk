@@ -255,7 +255,7 @@ retroExamplePlot = function(df, date, panel){
                                  xend = date,
                                  yend = upr * 20,
                                  color = 'predicted'),
-                             size = .2,
+                             size = .3,
                              alpha = 0.8) +
                 
                 ### arrow indicating current day for prediction
