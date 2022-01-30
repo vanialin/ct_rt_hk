@@ -183,7 +183,7 @@ predBoxPlot = function(ct, panel){
                                  labels = c('<0.5', '0.5-1.0', '1.0-1.5', '>1.5')) +
                 scale_fill_manual(name = '',
                                   values = c('#c9c9ff', '#f3cfcf')) +
-                theme(legend.position = c(0.7, 0.9)) +
+                theme(legend.position = c(0.3, 0.95)) +
                 labs(title = panel)
 }
 #
