@@ -1,8 +1,6 @@
 # ct_rt_hk
  
-Codes for generating results in the manuscript "Incorporating temporal distribution of population-level viral load enables real-time estimation of COVID-19 transmission" published on *Nature Communications* (https://doi.org/10.1038/s41467-022-28812-9
-
-).
+Codes for generating results in the manuscript "Incorporating temporal distribution of population-level viral load enables real-time estimation of COVID-19 transmission" published on *Nature Communications* (Nat Commun 13, 1155 (2022). https://doi.org/10.1038/s41467-022-28812-9).
 
 ## data
 In the data folder we have provided both the empirical data of daily aggregate values (including case counts, incidence-based Rt and Ct distributions) and a set of synthetic data under simulation for reference. 
